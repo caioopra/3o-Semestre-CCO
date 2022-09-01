@@ -11,10 +11,9 @@ erro_admitido = 10 ** (-14)
 i = 1
 while erro > erro_admitido:
     fatorial *= i
-    soma += x ** i / fatorial
+    soma += x**i / fatorial
     erro = abs(exato - soma)
-    
+
     i += 1
 
 print(soma)
-print(exato)
