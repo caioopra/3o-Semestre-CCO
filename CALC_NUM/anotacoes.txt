@@ -1,0 +1,9 @@
+Precisão em C++:
+	float : 7
+	double: 15
+
+	Aumentar precisão de cout: 
+	cout << setprecision(x);
+
+	Potência: double numero = xxxe<POTENCIA>; (0.12e-5)
+ 
