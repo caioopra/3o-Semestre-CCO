@@ -16,4 +16,5 @@ while erro > erro_admitido:
 
     i += 1
 
+print(exato)
 print(soma)
