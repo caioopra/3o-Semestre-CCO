@@ -1,0 +1,76 @@
+Filas Circulares
+-----------------
+=> situação especial usando vetores
+=> modelo diferente de fila
+
+=> 3 variáveis de controle:
+	início (antes sempre a posicao 0)
+	fim (iniciada como -1, mas precisa das outras variáveis)
+	quantidade (antes dada pelo fim da fila)
+
+=> vantagem por não precisar "andar" os elementos da fila quando remove valor da fila -> muda inicio (incrementa e remove os elementos)
+=> colocar novo elemento: incrementa fim e passa a ser a última posição
+	-> incrementa fim e % MAXFILA
+
+=> mais eficiente por não precisar fazer a movimentação dos dados
+
+--------
+
+CONSTRUTOR inicializaFilaCircular() {
+	inicio = 0
+	fim = -1
+	quantidade = 0
+}
+
+// outra forma possivel (usando ponteiro para o vetor)
+CONSTRUTOR inicializaFilaCircular {
+	dados* = new T[MAXFILA]
+	inicio = 0
+	fim = -1
+	quantidade = 0
+}
+
+bool filaCircularCheia() {
+	se (quantidade == maxfila) {
+		retorne Verdadeiro
+	} senao {
+		retorne Falso
+	}
+}
+
+bool filaCircularVazia() {
+	se (quantidade == 0) {
+		retorne Verdadeiro
+	} senao {
+		retorne Falso
+	}
+}
+
+int insererCircular(dado) {  // altera o final da fila
+	se (filaCircularCheia()) {
+		retorne erroFilaCheia
+	} senao {
+		fim = (fim + 1) % tamanho  // tamanho = tamanho maximo
+		dados[fim] = dado
+		quantidade++;
+		
+		retorne fim;
+	}
+}
+
+tipo retiraCircular() {  // move aonde a fila inicia
+	tipo dado
+	
+	se (filaCircularVazia) {
+		return erroFilaVazia
+	} senao {
+		dado = dado[inicio]
+		inicio = (inicio + 1) % tamanho
+		quantidade--
+		
+		return dado
+	}
+}
+
+
+=> pode reimplementar a lista 

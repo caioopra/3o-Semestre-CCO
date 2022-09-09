@@ -1,0 +1,19 @@
+=> estrutura de dados: estuda técnicas computacionais para organização e manipulação eficiente de quaisquer quantidades de informações
+	-> algoritmos que otimizem uso de memória
+	-> estrutura que mostrem como dados são organizados
+	-> conjunto de operações sobre os dados
+
+----------
+Filas usando vetores
+=> duas operações básicas: incluir (no fim da fila) e retirar (do começo da fila)
+	-> enfileirar e desenfileirar
+=> FIFO (first-in, first-out)
+
+=> objeto auxiliar na fila que indica o que está no fim da fila (posicao)
+	-> "ultimo" que vai sendo incrementado até chegar no valor máximo (ficar cheia)
+=> constante com tamanho do vetor (para ver quando encheu)
+
+
+=> retirar elemento: algoritmo para mover os elementos uma posicao para frente
+
+=> operações: inclui/retira dado, posicao do ultimo, filaCheia, filaVazia, inicializaFila
