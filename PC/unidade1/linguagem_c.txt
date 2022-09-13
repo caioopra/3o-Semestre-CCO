@@ -1,0 +1,45 @@
+Strings
+=> string.h
+	strlen(): retrona tamanho da string
+	strcpy(): copia string para outra string
+	strct() : concatena duas strings
+	strcmp(): compara duas strings
+=> stdlib.h
+	atoi(str): converte string para inteiros
+
+
+Alocação Dinâmica de Memória
+=> var. simples, arrays e matrizes com tamanho determinado em tempo de execução
+=> stdlib.h
+	malloc(): aloca área contígua de mem. e retorna ponteiro para iníico da área (NULL caso erro)
+		-> type *ptr = (type *) malloc(byte-size)
+		   type: tipo dos dados para aloca
+		   byte-size: quantidade de bytes para alocar (múltiplo do tipo dos dados)
+		int *array_int = (int *) malloc(100 * sizeof(int))
+		char *str = (char *) malloc(200 * sizeof(char))
+	free(): desaloca área de memo. alocada por malloc()
+		-> free(ptr)
+		   ptr: ponteiro para área alocada
+		free(array_int)
+
+
+Estruturas
+=> estruturas alocadas dinamicamente, faz-se acesso aos campos com operador "->"
+	struct estrutura {
+		int a;
+		float b;
+	};
+	...
+		struct estrututra *s2;
+		s2 = (struct estrutura *) malloc(sizeof(struct estrutura));
+		s2->a = 20;
+		printf("%i", s2->a);  // printa 20
+
+
+=> definir novo tipo de dado: typedef
+typedef struct {
+	...
+} novo_tipo;
+
+novo_tipo variavel;
+=> pode operar como estrutura
