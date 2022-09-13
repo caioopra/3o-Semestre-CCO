@@ -1,0 +1,30 @@
+Localização de raízes
+=> teorema 1: f(x) uma função contínua em [a, b]; se f(a).f(b) < 0, então existe pelo menos um zero de f(x) entre a e b
+
+Método de partição: Bisseção
+=> apefeiçoar aproximação
+=> 2 valores entre os quais esta a raiz (2 pontos que a funcao troca de sinal) e sendo a funcao contínua, há entre os dois pontos uma raiz
+
+=> det. intervalo [a,b] onde há raízes
+	-> para cada intervalo [a,b] verificar se f(a).f(b) < 0, então uma raiz dentro do intervalo pode ser obtida:
+		1) xm = (a + b) / 2
+		2) se f(xm) = 0, xm é a raíz, se não verificar em qual subintervalo de [a,b] xm (raiz) está
+		3) f(a).f(xm) < 0: xm pertence a [a, xm] e b=xm
+		   f(a).f(xm) > 0: xm pertence a [xm, b] e a=xm
+	-> repete-se sucessivamente até que a diferença entre os dois valores de raiz seja menor que o val. pre-estabelecido
+		|f(raiz)| < erro ; |b-a| < erro
+=> pode definir número máximo de iterações
+
+raiz de e^x sex = 1 em [0,1] com 4 partições
+	f(x) = e^x sex(x) - 1     -> contínua em [a,b]
+	f(0) = -1 e f(1) = 1,287
+	f(0).f(1) < 0 e dentro de [0,1]
+	-> iterando:
+		0) a=0, xm=0,5, b=1
+		   f(a) = -1, f(xm) = -0,21, f(b) = 1,287
+		   f(a).f(xm) > 0; ou seja:
+			  a=xm
+	    1) a=0,5, xm=0,75, b=1
+		  ...
+		...
+	xm ~= 0,594 e |a-b| = 0,062
