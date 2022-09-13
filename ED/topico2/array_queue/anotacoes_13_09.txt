@@ -1,0 +1,8 @@
+Notação pós-fixa: operandos primeiro e depois operandos
+	2 + (5-8/(1 + (5-2)) * (3-1)     -> do jeito tradicional, que pode ser traduzido para
+	2 5 8 1 5 2 - + / - 3 1 - * +
+	=> vantagem: não ambígua, sem parênteses -> precisa de pilha para resolução
+
+=> cria pilha de operando
+	-> quando tiver operando: empilha o operando
+	-> quando tiver operador: desempilha (b) -> desempilha (a) -> empilha (a op b)

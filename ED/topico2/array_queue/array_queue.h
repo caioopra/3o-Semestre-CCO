@@ -48,6 +48,8 @@ class ArrayQueue {
 
     std::size_t size_;
     std::size_t max_size_;
+    
+    int begin_;
     int end_;
 
     static const auto DEFAULT_SIZE = 10u;
@@ -57,31 +59,97 @@ class ArrayQueue {
 #endif
 
 // definição dos métodos
+
+// construtor padrao
 template <typename T>
 structures::ArrayQueue<T>::ArrayQueue() {
     contents = new T[DEFAULT_SIZE];
-    size_ = 0;
+    begin_ = 0;
     end_ = -1;
+    size_ = 0;
 }
 
+// construtor com tamanho customizado
 template <typename T>
 structures::ArrayQueue<T>::ArrayQueue(std::size_t max) {
     max_size_ = max;
-    contents = new T[DEFAULT_SIZE];
+    contents = new T[max_size_];
+    begin_ = 0;
+    end_ = -1;
     size_ = 0;
-    end_ = -1
 }
 
+// destrutor
 template <typename T>
 structures::ArrayQueue<T>::~ArrayQueue() {
     delete [] contents;
 }
 
+// adiciona ao final da fila
 template <typename T>
 void structures::ArrayQueue<T>::enqueue(const T& data) {
     if (full()) {
         throw std::out_of_range("Fila cheia");
     }
 
-    // !
+    end_ = (end_ + 1) % max_size_;
+    contents[end_] = data;
+    size_++;
+}
+
+
+// remove primeiro elemento e "roda" fila
+template <typename T>
+T structures::ArrayQueue<T>::dequeue() {
+    if (empty()) {
+        throw std::out_of_range("Fila vazia");
+    }
+
+    T data = contents[begin_];
+    begin_ = (begin_ + 1) % max_size_;
+    size_--;
+
+    return data;
+}
+
+// mostra conteudo no final da fila
+template <typename T>
+T& structures::ArrayQueue<T>::back() {
+    if (empty()) {
+        throw std::out_of_range("Fila vazia");
+    }
+    return contents[end_];
+}
+
+// limpa a fila
+template <typename T>
+void structures::ArrayQueue<T>::clear() {
+    begin_ = 0;
+    end_ = -1;
+    size_ = 0;
+}
+
+
+// retorna o tamanho atual da fila
+template <typename T>
+std::size_t structures::ArrayQueue<T>::size() {
+    return size_;
+}
+
+// retorna o tamanho maximo da fila
+template <typename T>
+std::size_t structures::ArrayQueue<T>::max_size() {
+    return max_size_;
+}
+
+// mostra se a fila esta vazia com um booleano
+template <typename T>
+bool structures::ArrayQueue<T>::empty() {
+    return (size_ == 0);
+}
+
+// mostra se a fila esta cheia com um booleano
+template <typename T>
+bool structures::ArrayQueue<T>::full() {
+    return (size_ == max_size_);
 }
