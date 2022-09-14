@@ -1,0 +1,2 @@
+Ponteiro vazio (como por falta de memória) em cpp: nullptr
+	-> em C, seria NULL
