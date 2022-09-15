@@ -63,6 +63,7 @@ class ArrayQueue {
 // construtor padrao
 template <typename T>
 structures::ArrayQueue<T>::ArrayQueue() {
+    max_size_ = DEFAULT_SIZE;
     contents = new T[DEFAULT_SIZE];
     begin_ = 0;
     end_ = -1;
