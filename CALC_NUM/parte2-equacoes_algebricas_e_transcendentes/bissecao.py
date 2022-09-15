@@ -1,6 +1,6 @@
 from math import exp, cos
 
-erro_admitido = 10 ** -15
+erro_admitido = 10**-15
 # valores iniciais das variaveis
 a = 0
 b = 2
@@ -8,7 +8,7 @@ xm = (a + b) / 2
 erro = abs(a - b)
 
 
-def calcular_xm(a: float, b:float) -> float:
+def calcular_xm(a: float, b: float) -> float:
     return (a + b) / 2
 
 
@@ -26,6 +26,6 @@ while erro > erro_admitido:
     else:
         a = xm
 
-    erro = abs(a - b)
+    erro = abs(funcao(xm))
 
 print(xm)
