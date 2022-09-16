@@ -11,12 +11,13 @@ def calcular_xm(a: float, b: float, funcao_a: float, funcao_b: float) -> float:
 
 
 # valores iniciais das variaveis e constantes
-erro_admitido = 10**-12
+erro_admitido = 10**-4
 
 a = 0
 b = 2
 xm = calcular_xm(a, b, funcao(a), funcao(b))
 funcao_xm = funcao(xm)
+k = 0
 
 while abs(funcao_xm) > erro_admitido:
     funcao_a = funcao(a)
@@ -29,5 +30,7 @@ while abs(funcao_xm) > erro_admitido:
         b = xm
     else:
         a = xm
+    k += 1
 
 print(xm)
+print(k)

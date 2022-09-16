@@ -15,7 +15,6 @@ def calcular_xm(a: float, b: float) -> float:
 def funcao(x: float) -> float:
     return exp(x) - (2 * cos(x))
 
-
 while erro > erro_admitido:
     xm = calcular_xm(a, b)
     funcao_a = funcao(a)
