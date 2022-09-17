@@ -1,0 +1,9 @@
+Controle de Processos:
+	fork() -> cria processo
+		=> processo filho criado por processo pai
+		=> filho é cópia do processo pai
+		=> retorno: 0 para o filho; >0 para pai (PID do processo filho criado)
+	exit()
+	wait() -> wait(NULL) faz processo aguardar termino de filho
+		=> retorno: -1 quando não tem mais filhos; >=0 (PID do processo filho que terminou)
+		=> processo esperar terminar todos filhos: while(wait(NULL) >= 0);
