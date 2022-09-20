@@ -1,0 +1,13 @@
+NEWTON
+
+
+
+
+
+SECANTE
+
+x{k-1} = x0
+x{k} = x1
+
+=> não precisa da raiz entre esses dois pontos fornecidos
+	-> não estarem muito distantes da raiz e nem muito distantes entre si
