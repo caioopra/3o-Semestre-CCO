@@ -8,10 +8,10 @@ int main(int argc, char **argv) {
 
 	if (pid >= 0) {  //se for positivo criou processo
 		if (pid == 0) {
-			printf("Processo filho\n");
+			printf("Processo filho - PID: %d\n", getpid());
 	 	} else {
-			printf("Processo pai\n");
-			wait(NULL);  // faz esperar p3lo rilho 
+			printf("Processo pai - PID: %d\n", getpid());
+			wait(NULL);  // faz esperar pelo rilho 
 		}
 		return 0;
 	} else {

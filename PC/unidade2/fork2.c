@@ -10,6 +10,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    // argv[0] é o próprio nome dor arquivo
     int nforks = atoi(argv[1]);
 
     /* Cria nforks processos filhos a partir do processo inicial (processo pai). */

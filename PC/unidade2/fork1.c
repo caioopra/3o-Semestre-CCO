@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
 
     /* Cria um processo filho. */
     fork();
-    
+  
     printf("Processo %d executando!\n", getpid());
     fflush(stdout);
 
