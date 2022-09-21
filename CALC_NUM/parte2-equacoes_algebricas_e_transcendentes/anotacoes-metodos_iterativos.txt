@@ -1,13 +1,35 @@
 NEWTON
+=> aproximar xk para raiz no intervalo [a,b] usando sua expansão em série de Taylor em torno de xk-1
+=> em região proxima da raiz, delta x será suficientementr pequeno, assim, representando f(x) com os dois primeiros termos da série:
+	f(x) = f(x0) + f'(x0).deltax = 0
+	-> deltax = x - x0
+=> isolando x: x = x0 - (f(x0) / f'(x0))
+	-> sendo x uma aproximação para a raiz, devido ao erro da série de Taylor
+=> melhorar aproximação de x da raiz f(x)=0, adota x como novo valor para x0
+	-> x{k+1} = xk - f(xk) / f'(xk)
+	nos algoritmos implementados: xk = x0 - (f(x0) / f'(x0))
 
-
-
-
+=> problemas:
+	-> necessidade do cálculo da derivada de forma analítica
+	-> necessidade de fornecer um ponto próximo da raiz
+=> pode não convergir:
+	-> x0 inadequado
+	-> se pegar ponto crítico (f'(x) = 0)
 
 SECANTE
+=> refinar raiz sem explicitar f'(x); sendo h no limite pequeno: f'(xk) = (f(xk) - f(x{k-1})) / (xk - x{k-1}) 
+=> substituindo f'(xk) em x{k+1} = xk - f(xk) / f'(xk):
+	x{k+1} = xk - ((xk - x{k-1}).f(xk) / f(xk) - f(x{k-1}))
 
-x{k-1} = x0
-x{k} = x1
+=> considerando:
+	x{k-1} = x0
+	x{k} = x1
 
 => não precisa da raiz entre esses dois pontos fornecidos
 	-> não estarem muito distantes da raiz e nem muito distantes entre si
+=> faz aproximação da derivada, que faz compensar mesmo com mais iterações em relação à Newton
+=> f deve ser duas vezes contínua e diferenciável e a raiz deve ser simples (não múltipla (complexa?))
+
+-> para atualizar as variáveis:
+	xo = x1
+	x1 = xk
