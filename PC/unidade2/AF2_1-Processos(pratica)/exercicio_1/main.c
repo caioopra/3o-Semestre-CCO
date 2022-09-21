@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
 
     if (pid1 > 0) {  // ações do processo pai ao primeiro fork
         printf("Processo pai criou %d\n", pid1);
+        fflush(stdout);
 
         int pid2 = fork();
         if (pid2 > 0) {  // ações do processo pai ao segundo fork
