@@ -1,0 +1,14 @@
+Tipo abstrato de dados Lista
+=> operações:
+	-> inserção: qualquer posição (insert()) / inicio (push_front()) / fim (push_back())
+		-> inserção ordenada (elementos inseridos ordenáveis e comparáveis) (insert_sorted())
+	-> remoção: qualquer posição (pop()) / inicio (pop_front()) / fim (pop_back())
+	-> consulta: qualquer posição (at())
+	-> testes: vazio (empty()) / cheio (full())
+	-> limpeza/esvaziar (clear())
+	-> remoção por chave/dado (remove())
+	-> encontrar por chave/dado (find()) -> retorna posição
+	-> contém: chave / dado (contains) -> retorna booleano
+
+
+	-> operator: faz sobrecarga do operador [] -> acessar posição com operador no vetor
