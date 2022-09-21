@@ -37,8 +37,8 @@ int main(int argc, char** argv) {
         int pid2 = fork();
         if (pid2 > 0) {  // ações do processo pai ao segundo fork
             printf("Processo pai criou %d\n", pid2);
-            wait(NULL);
-            wait(NULL);
+            while(wait(NULL) >= 0);
+
             printf("Processo pai finalizado!\n");
         } else if (pid2 == 0) {  // processo filho pid2
             printf("Processo filho %d criado\n", getpid());

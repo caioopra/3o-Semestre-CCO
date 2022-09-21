@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 //                          (principal)
@@ -19,6 +22,40 @@
 // Obs:
 // - netos devem esperar 5 segundos antes de imprmir a mensagem de finalizado (e terminar)
 // - pais devem esperar pelos seu descendentes diretos antes de terminar
+void create_grandchild(int quantidade) {
+    for (int i = 0; i < quantidade; i++) {
+        if (fork() == 0) {
+            printf("Processo %d, filho de %d\n", getpid(), getppid());
+            sleep(5);
+            
+            fflush(stdout);
+            printf("Processo %d finalizado\n", getpid()); 
+        
+            exit(0);
+            break;
+        }
+    }
+    while(wait(NULL) >= 0);
+}
+
+void create_child(int quantidade) {
+    for (int i = 0; i < quantidade; i++) {
+        if (fork() == 0) {
+            printf("Processo %d, filho de %d\n", getpid(), getppid());
+            fflush(stdout);
+
+            create_grandchild(3);
+
+            printf("Processo %d finalizado\n", getpid()); 
+
+            exit(0);
+            break;
+        }
+    }
+    while(wait(NULL) >=0);
+    printf("Processo principal %d finalizado\n", getpid());
+}
+
 
 int main(int argc, char** argv) {
     // ....
@@ -30,6 +67,7 @@ int main(int argc, char** argv) {
      * 3. Espere o término dos filhos                *
      *************************************************/
 
-    printf("Processo principal %d finalizado\n", getpid());
+    create_child(2);
+
     return 0;
 }
