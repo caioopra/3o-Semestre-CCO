@@ -1,0 +1,106 @@
+=> lista: caso geral de pilha e fila (possuem comportamentos esterotipados e poucos métodos)
+	-> amplo e comportamento mais variado
+	-> pode ser ou não ordenada
+=> definição: conjunto de dados dispostos e/ou acessáveis em uma sequência determinada
+	-> regras sobre essa sequência
+
+=> espaços de memória consecutivos (vetor) ou conjunto de dados na memória mas logicamente encadeado (fisicamente espalhados)
+
+=> estrutura de organização das informações e operações sobre ela
+	-> ente matemático que responde operações definidas
+		-> nesse caso, possui mais operações internas (fora do alcance do programador e utilizador)
+=> elementos em determinada sequência:
+	-> não ordenada: possui dados em sequência, mas sem regra que obriga os dados a estarem naquela sequência específica
+		-> surgem cronologicamente e com ordem assim
+	-> ordenada: ordem forçada pelos próprios dadso
+		-> regra aplicada e diz se elemento de dado precede ou não um
+		-> "alfabética", "numérica crescente"
+		-> compara os dados e vê aonde inserir
+=> estrutura de dados não dispersa: sem lacunas no meio
+	-> métodos de reestruturação para garantir isso
+
+--------------
+LISTA USANDO VETORES
+
+=> fim da lista = - 1   -> lista vazia
+	-> inserindo mais elementos, atualiza o valor para a última posição
+	-> "último"
+=> constante do tamanho do vetor para saber se está cheia
+	-> testes para cheia e vazia
+
+ 
+	| constantes MAXLISTA = 100;  // tamanho máximo da lista
+	| classe Lista {
+	| 	inteiroDados[MAXLISTA];
+	|   inteiro ultimo;
+	| }
+	
+MÉTODOS:
+=> colocar e tirar dados da lista
+	-> entrada: adiciona(dado), adicionaNoInicio(dado), adicionaNaPosicao(dado, posicao), adicionaEmOrdem(dado)
+	-> retirar: retira(), retiraDoInicio(), retiraDaPosicao(posicao), retiraEspecifico(dado)
+=> testes (vazia, cheia e outros)
+	-> listaCheia, listaVazia, posicao(dado), contem(dado), igual(dado1, dado2), sucede/maior(dado1, dado2), precede/menor(dado1, dado2)
+=> inicialização e finalização
+	-> inicializaLista, destroiLista
+
+
+Construtor
+| Lista()
+| 	ultimo = -1
+
+Destrói (pode ter várias versões, mas parte da premissa de que não vai remover o dado)
+|| destroiLista()
+|| 		ultimo = -1
+
+
+||bool ListaCheia()
+||	se (ultimo == maxlista = 1):
+||		return verdadeiro
+||	senao
+||		return false
+
+|| bool ListaVazia()
+||	se (ultimo == -1):
+|| 		return verdadeiro
+||   else:
+||   	return falso
+
+
+Adiciona (como o de fila e pilha)
+||interio Adiciona(int dado)
+||	se listaCheia:
+||		return ERROLISTACHEIA
+||	senao:  // pode fazer fora do else
+||		ultimo++
+||		dados[ultimo] = dado
+||		return ultimo
+
+Retira (o mesmo de desempilhar, sem nenhum atributo, tira do fim da lista)
+||inteiro retira():
+||	se listaVazia:
+||		return ERROLISTAVAZIA
+||	senao:
+||		ultimo = dado--
+||		return dados[ultimo++]    // poderia mudar o valor depois e não fazer essa operação?
+
+
+
+AdicionaNoInicio: precisa testar se há espaço; empurrar tudo uma posição para baixo
+	-> começa do fim da lista, empurra o último uma posição para baixo e depois sobe, copiando o valor para o que agora já foi movido
+||inteiro adicionaNoInicio(int dado)
+||	int posicao  // auxiliar para "caminhar"
+||	
+||	se listaCheia:
+||		return ERROLISTACHEIA
+||	senao:
+||		ultimo++
+||		posicao = ultimo
+||		
+||		enquanto posicao > 0:
+||			// empurrar tudo para trás
+||			dados[posicao] = dados[posicao-1]
+||			posicao--
+||		
+||		dados[0] = dado
+||		return 0  // posicao do ultimo dado inserido
