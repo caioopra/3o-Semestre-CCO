@@ -31,7 +31,7 @@ LISTA USANDO VETORES
  
 	| constantes MAXLISTA = 100;  // tamanho máximo da lista
 	| classe Lista {
-	| 	inteiroDados[MAXLISTA];
+	|	inteiroDados[MAXLISTA];
 	|   inteiro ultimo;
 	| }
 	
@@ -47,7 +47,7 @@ MÉTODOS:
 
 Construtor
 | Lista()
-| 	ultimo = -1
+|	ultimo = -1
 
 Destrói (pode ter várias versões, mas parte da premissa de que não vai remover o dado)
 || destroiLista()
@@ -104,3 +104,85 @@ AdicionaNoInicio: precisa testar se há espaço; empurrar tudo uma posição par
 ||		
 ||		dados[0] = dado
 ||		return 0  // posicao do ultimo dado inserido
+
+RetiraNoInicio: salva o valor, empurra tudo para frente e retorna o valor (decrementa o último) -> mesmo algoritmo de retirar da fila
+||inteiro retiraDoInicio()
+||	int posicao, valor;
+||	se listaVazia:
+||		return ERROLISTAVAZIA
+||	senao
+||		ulitmo--
+||		valor = dados[0]
+||		posicao = 0
+||
+||		enquanto (posicao <= ultimo)
+||			// empurrando tudo para frente
+||			dados[posicao] = dados[posicao+1]
+||		return valor
+ 
+
+AdicionaNaPosicao: trata aquela posição como se fosse o inicio da lista e o restante como se fosse uma outra lista, a empurrando um para frente (tail)
+	-> recebe dado e posição que quer inserir
+inteiro adicionaNaPosicao(int dado, int destino)
+	int posicao;
+	
+	se listaCheia
+		return ERROLISTACHEIA
+	senao
+		se (destino > ultimo + 1 ou destino < 0):
+			return ERROPOSICAO
+		ultimo++
+		posicao = ultimo
+
+		enquanto(posicao > ultimo)
+			// empurrar os dados para tras
+			dados[posicao] = dados[posicao-1]
+			posicao--
+		dados[destino] = dado
+		return aonde
+
+RetiraDaPosição: lógica similar da inserção; retornar de posição específica e preencher o buraco da lista
+	-> testa se tem elementos e posição é válida
+||inteiro retiraDaPosicao(int fonte):
+||	int posicao, valor;
+||	se (fonte > ultimo ou fonte < 0)
+||		return ERROPOSICAO
+||	senao
+||		se (listaVazia)  // nao precisa dessa segunda verificação, já nao passaria na primeira
+||			return ERROLISTAVAZIA
+||		senao
+||			ultimo--
+||			valor = dados[fonte]
+||
+||			enquanto (posicao <= ultimo)
+||				// empurrar para frente
+||				dados[posicao] = dados[posicao +1]
+||				posicao++
+||			return valor
+
+
+AdicionaEmOrdem: precisa de função da lista para comparar os dados(maior/menor/igual)
+	-> parte da premissa que ela sempre está ordenada
+	-> sempre chama com adicionaEmOrdem, senão não há garantia de que os dados estão ordenados
+	-> procura pela posiç~ao onde pode inserir, comparando os dados 
+	-> chama adicionaNaPosicao
+
+	-> quando dado armazenadao não possui operação de comparação, é preciso implementar
+
+||bool maior(int dado1, int dado2)  // parte da premissa que o tipo de dado já possi operação que permite comparação
+||	se (dado1 > dado2)  // ou outro; operação do tipo base da lista
+||		return True
+||
+||	return False
+
+||int adicionaEmOrdem(int dado)
+||	int posicao;  // auxiliar
+||	se listaCheia
+||		return ERROLISTACHEIA
+||	senao
+||		posicao = 0
+||		enquanto (posicao <= ultimo e maior(dado, dados[posicao])
+||			// encontrar posicao para inserir
+||			posicao++
+||		return adicionaNaPosicao(dado, posicao)
+1 04 00
