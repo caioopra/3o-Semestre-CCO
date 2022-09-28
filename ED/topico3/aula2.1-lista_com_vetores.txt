@@ -185,4 +185,34 @@ AdicionaEmOrdem: precisa de função da lista para comparar os dados(maior/menor
 ||			// encontrar posicao para inserir
 ||			posicao++
 ||		return adicionaNaPosicao(dado, posicao)
-1 04 00
+
+RetiraEspecífico: remove um dado específico
+	-> considera os dados que vem atrás dele como uma sublista e empurra para frente
+
+||int posicao(int dado)
+||	int posicao;
+||	posicao = 0
+||	
+||	enquanto (posicao <= ultimo && !(Igual(dado, dados[posicao])))  // se passou do fim da lista ou se encontrou o dado
+||		posicao++
+||	
+||	se posicao > ultimo:
+||		return erroPosicao
+||	
+||	return posicao
+	
+||int retiraEspecifico(int dado)
+||	int posicao
+||	se listaVazia
+||		throw ...
+||	
+||	posicao = posicao(dado)
+||	se posicao < 0:
+||		return ErroPosicao
+||
+||	return retiraDaPosicao(posicao)
+	
+bool contem
+bool igual
+bool menor
+	
