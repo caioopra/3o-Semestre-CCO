@@ -1,0 +1,2 @@
+Aumentar número de cilos dá um resultado pior por ter menos precisão no valor final, uma vez que aumenta a probabilidade de os dados serem acessados simultaneamente
+	-> exercicio1 30000 2000 é melhor do que exercicio1 2000 30000

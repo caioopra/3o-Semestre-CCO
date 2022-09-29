@@ -1,0 +1,187 @@
+Lista dinâmica (simplesmente encadeada)
+
+=> lista em vetor:
+	-> 1 unica alocação (do próprio vetor)
+	-> tamanho máximo limitado pelo vetor
+	-> pode ter desperdício de memória
+	-> necessidade de deslocamento
+=> lista encadeada:
+	-> 1 alocação a cada nova inserção
+	-> tamanho máximo limitado pela memória
+	-> uso racional de memória
+	-> sem deslicamento de dados, mas não pode acessar posição diretamente
+
+=> operações de lista encadeada: mesmas de lista mas sem necessidade de full() (sem max_size_)
+
+
+=> construtor de LinkedList:
+	Node *head;   (nullptr inicialmente, aponta para o inicio)
+	int size = 0;
+	-> não faz nenhuma alocação, faz inicialização apenas
+=> classe Node possui ponteiro para classe Node (para outro node)
+
+Nodo
+(A|  )   ->   (B|  )  -> //
+ T *Node       T *Node	(tipos)
+0	       1	("posição")
+	-> data (tipo T) e next (*Node)
+
+
+empty() {
+	return (size_ == 0)
+}
+
+pop_front() {
+	if (empty()) {
+		throw ...
+	}
+	
+	T saida = aux->data;
+	Node* aux = head;  // copia referencia para o primeiro elemento
+	haed = aux->next;  // aux ou o head (head = head->next)
+	delete aux;	   // desalocar node
+	
+	size--;
+	return saida;
+}	
+
+clear() {
+	enquanto não vazia {
+		remove do inicio
+	}
+}
+
+~LinkedList() {
+	clear()
+}
+
+
+push_front() {
+	Node *novo = new Node(dado);	// poderia passar next também
+	novo->next = head;	// no VPL, está privado o head e next => novo->next(head)
+	
+	haed = novo;
+	size_++;
+}
+
+push_back() {
+	if (empty()) {
+		return push_front(data));
+	}
+
+	Node *p;
+	p = head;
+
+	Node *novo = new Node(data);
+	novo->next = nullptr;
+	
+	while (p->next != nullptr) {
+		p = p->next;
+	}
+
+	p->next = novo;
+	size_++;
+}
+
+insert(data, index) {   (insere em index)		// fazer verificação se o índice é válido (permite inserir de 0 até size)
+	Node *p = new Node(data);
+
+	if (index == 0) {
+		return push_front(data)
+	}
+	
+	if (index == size) {
+		return push_back(data)
+	}
+
+	p = head;
+	for (int i = 1; i < index; i++) {
+		p = p->next;
+	}  // cada passo, p aponta para o próximo node e aponta para uma posição antes da que quer inserir
+
+	Node* novo;
+	novo->next = p->next;  // nessa ordem para não desligar a lista
+	p->next = novo;
+
+	size_++
+} 
+
+pop_back() {
+	if (empty()) {
+		throw ...
+	}
+	if (size_ == 1) {
+		return pop_front()
+	}
+	
+	// vai até size-2 para parar no penúltimo elemento da lista (ou size_-1 dentro de um for)
+	// vai até o penúltimo e desaloca o último
+	p = head;
+	for (int i = 1; i < size-1; i++) {
+		p = p->next;
+	}
+	
+	// criar ponteiro auxiliar ou usando o p e seu next
+	T saida;
+	saida = p->next->data  // acessa dado do último node
+	delete p->next;
+
+	p->next = nullptr;
+	size--;
+
+	return saida;
+}
+
+pop() {
+	if (empty()) {
+		throw ...
+	}
+	
+	// verificação se o índice é válido	
+	if (index < 0 || index >= size) {
+		throw ...
+	}
+ 
+	if (size_ == 1) {
+		return pop_front()
+	}
+	if (index = size_ - 1) {
+		return pop_back()
+	}
+
+	p = head;
+	for (i=1; i < index; i++) {
+		p = p->next;
+	}
+
+	aux = p->next;
+	T saida = aux->data;
+	
+	// mudar o ponteiro, pulando o que vai ser removido
+	p->next = aux->next;
+	delete aux;
+
+	size_--;
+	return saida;
+}	
+
+insert_sorted() {
+	if (empty()) {
+		return push_front()
+	}
+
+	Node* node = new Node(data);
+	p = head;  // ou usando mais um ponteiro ou com p->next->data ou encontrando posição
+	q = nullptr;
+
+	while(p != nullptr && data > p->data) {
+		q = p;
+		p = p->next;
+	}
+	novo->next = p;  // novo nó aponta para o seu pŕoximo
+	if (q != nullptr) {  // quer dizer que entrou no laço e passou do primeiro nodo
+		q->next = novo;  // faz o anteiror ao novo nó apontar para ele agora
+	} else {  // insere no início por ser menor do que todos os valores
+		return push_front(data);  // já altera o head pra apontar para ele
+	}
+	size_++;
