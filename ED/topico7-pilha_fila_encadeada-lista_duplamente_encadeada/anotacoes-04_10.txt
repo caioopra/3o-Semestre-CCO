@@ -1,0 +1,37 @@
+Lista duplamente encadeada:
+
+class Node {
+	...
+	T data;
+	Node* next;
+	Node* prev;
+}
+
+=> prós: 2x mais rápido na média
+=> contra: 1 ponteiro extra por nó
+
+
+void push_front(T data) {
+	Node* novo;
+	novo = new Node(data);
+	if (novo == nullptr) {
+		excecao
+	}
+
+	novo->prev = nullptr;
+	novo->next = head;	// se tiver apontando nullptr ou nao, funciona
+
+	if (empty()) {
+		tail = novo;
+	} else {
+		head->prev = novo;
+	}
+	
+	head = novo;
+	size_++
+}
+
+
+void push_back(T data) {
+	
+	
