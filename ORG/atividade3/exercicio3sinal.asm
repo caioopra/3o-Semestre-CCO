@@ -5,7 +5,6 @@
 	.align 4
 	MATRIZ_ASCII: .space 128
 .text
-
 MAIN: 
 	la 	$s0, MATRIZ_ORIGINAL		# endereço da matriz original
 	la 	$s1, MATRIZ_TRANSPOSTA		# endereço da matriz de resultado
@@ -16,20 +15,20 @@ MAIN:
 	li	$s5, 0 		# contaodr para matriz de resultado
 	li 	$s6, 0 		# contador endereço da matriz ascii
 
-LOOP:	 	
-	li	$t0, 0
+	LOOP:	 	
+		li	$t0, 0
 
-LOOP_LINHA: 
-	add 	$t1, $s3, $t0		# deslocamento da posicao atual
-	add 	$t1, $t1, $s0		# endereco na matriz original
-	lw 	$t2, ($t1)		# salva no registrador o valor lido da matriz
+	LOOP_LINHA: 
+		add 	$t1, $s3, $t0		# deslocamento da posicao atual
+		add 	$t1, $t1, $s0		# endereco na matriz original
+		lw 	$t2, ($t1)		# salva no registrador o valor lido da matriz
 	    
-	add	$t3, $s1, $s5		# endereço na matriz transposta
-	sw	$t2, ($t3) 		# salva o valor lido da original no seu endereco na transposta
+		add	$t3, $s1, $s5		# endereço na matriz transposta
+		sw	$t2, ($t3) 		# salva o valor lido da original no seu endereco na transposta
 	    
-	add	$t4, $s2, $s6		# endereco da matriz ASCII
+		add	$t4, $s2, $s6		# endereco da matriz ASCII
 
-	ble 	$t2, 0, INSERE_NEGATIVO # testa se número a ser convertido é positivo ou negativo
+		ble 	$t2, 0, INSERE_NEGATIVO # testa se número a ser convertido é positivo ou negativo
 
 	INSERE_POSITIVO:
 	    	li 	$t5, 43		# simbolo +
