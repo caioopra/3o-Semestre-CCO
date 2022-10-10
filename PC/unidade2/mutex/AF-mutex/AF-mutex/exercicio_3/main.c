@@ -14,17 +14,17 @@ int compute(int arg) {
         return 1;
     }
 
-    int soma = 1;
+    int soma = 0;
     int a = 1;
     int b = 1;
-    int c = 0;
+    int c = a + b;
 
-    for (int i = 0; i < arg - 2; i++) {
-        c = a + b;
+    for (int i = 2; i < arg - 2; i++) {
         soma += c;
 
         a = b;
         b = c;
+        c = a + b;
     }
 
     return soma;
