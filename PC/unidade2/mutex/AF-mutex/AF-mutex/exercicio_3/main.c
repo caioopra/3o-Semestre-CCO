@@ -14,20 +14,18 @@ int compute(int arg) {
         return 1;
     }
 
-    int soma = 0;
     int a = 1;
     int b = 1;
-    int c = a + b;
+    int c = 0;
 
-    for (int i = 2; i < arg - 2; i++) {
-        soma += c;
+    for (int i = 0; i < arg - 2; i++) {
+        c = a + b;
 
         a = b;
         b = c;
-        c = a + b;
     }
 
-    return soma;
+    return c;
 }
 
 // Função wrapper que pode ser usada com pthread_create() para criar uma
