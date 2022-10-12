@@ -1,0 +1,103 @@
+Lista circular: aplicações que elementos devem ser processados de forma periódioca
+	-> chaveamente de contexto de programas executadas por um processador em SO (multiprocesso)
+	-> trajetos de ônibus/aereo/...	
+-> não precisar de uma verificação se está no último, mas sim vai direto para o "primeiro"
+
+-> implementação: primeiro nó é "nó sentinela", inicialmente com ponteiro para ele mesmo (size_ = 0)
+	-> reduz dificuldade da implementação
+	-> ele fica fixo no começo da lista (conteúdo T lixo qualquer)
+	-> precisa de construtor de nó que não inicialize "data" como parametro
+	
+	
+---------------------------------
+inicialmente:
+	size = 0
+	head = tail = no sentinela
+	=> head sempre é fixo no sentinela
+
+--------------------------------
+inserção (inicio/fim/qualquer posicao logica)
+-> sempre pode acessar head->next mesmo com a lista "vazia"
+
+push_back:
+=> insere novo nó
+=> modifica tail para ser o novo inserido
+=> seu next = no sentinela (primeiro elemento)
+
+push_front:
+=> aloca novo nó
+	-> seu next = head->next
+	-> head->next = novo no
+=> NÃO ALTERA ->next do ultimo (continua apontando ainda para o no sentinela para manter circular)
+
+
+-------------------------------
+pop_front:
+	aux = elemento que quer tirar
+	head->next = aux->next
+	copia o dado de aux e o desaloca
+
+pop_back:
+	caminha até chegar no penultimo no (com um ponteiro)
+		-> ou com o size_ ou se p->next->next = head
+	aux marca no que vai sair
+	next do penultimo vai apontar para o sentinela
+	tail = p
+	copia dado do aux e o desaloca
+
+pop (considerar que primeiro no é apenas para referencia e sem dado válido)
+
+==========================================
+==========================================
+==========================================
+
+LISTA DUPLAMENTE ENCADEADA
+=> com nó sentinela (inicial)
+	size = 0
+	head = sentinela
+	next = prev = ponteiro para ele mesmo
+	
+	// nao precisa de tail, já é sentinela->prev
+	
+------------------------------
+push_front:
+	aloca novo nó
+	// para primeira inserção (caso lista estiver vazia, apenas com a sentinela)
+	novo->prev = head
+	novo->next = head
+	head->prev = novo
+	head->next = novo
+	
+	// quando já tem elemento na lista
+	novo->next = head->next
+	novo->prev = head
+	head->next->prev = novo
+	head->next = novo
+
+	size_++
+
+push_back:
+	aloca novo no
+	
+	novo->next = head
+	novo->prev = head->prev
+	head->prev->next = novo
+	head->prev = novo
+	
+	size_++
+-------------------------------
+pop_front:
+	Node* aux = head->next
+	
+	head->next = aux->next
+	aux->next->prev = head 
+	
+	salva dado e desaloca
+
+pop_back:
+	// nao precisa parar na penultima
+	aux = head->prev
+	// (p (penultimo) = aux->prev)
+	p->next = aux->next
+	p->prev = aux->prev
+

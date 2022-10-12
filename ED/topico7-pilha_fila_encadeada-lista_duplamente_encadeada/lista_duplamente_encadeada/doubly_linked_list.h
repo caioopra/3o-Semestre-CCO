@@ -93,3 +93,25 @@ template <typename T>
 structures::DoublyLinkedList<T>::~DoublyLinkedList() {
    clear();
 }
+
+template <typename T>
+void structures::DoublyLinkedList<T>::clear() {
+    while (!empty()) {
+        pop_front();
+    }
+}
+
+template <typename T>
+void structures::DoublyLinkedList<T>::push_back(const T& data) {
+    if (empty()) {
+        return push_front(data);
+    }
+
+    Node* new_node = new Node(data);
+    
+    head->prev->next = new_node;
+    new_node->next = head;
+    
+    tail = new_node;
+    size_++;
+}

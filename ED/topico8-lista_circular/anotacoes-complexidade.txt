@@ -1,0 +1,50 @@
+=> propriedades de algoritmos:
+	-> correção: resolver corretamente todas instâncias do problema
+	-> eficiência: desempenho (tempo e memória) adequados -> principal preocupação ("quantos passos até finalizar")
+	-> algoritmo deve finalizar
+
+=> tipos de análise de algoritmo
+	=> pior caso (mais comum de se fazer):
+		T(n) = quantidade máxima de tempo para qualquer entrada de tamanho n
+	=> caso médio (análise feita as vezes):
+		T(n) = tempo médio para qualquer entrada de tamanho n
+		-> implica em conhecimento sobre distribuição estatística das entradas
+	=> melhor caso (curiosidade, sem interesse)
+	
+-> quick sort é um dos poucos que se estuda pior caso, é o mais rápido, mas no pior caso é n^2
+-> melhor um algoritmo melhor do que máquina melhor
+
+
+
+ORDENAÇÃO POR INSERÇÃO: insere ordenadamente (um bolo ordenada e outro não, insere de forma ordenada no primeiro e seleciona o próximo do não ordenado para continuar)
+-> verificar se para: verifica se ele sai dos loops do programa em algum momento
+-> verificar se está correto: prova por indução matemática (vetor de tamanho 1, considerada que funciona para n-1 (hip. indutiva) e dá passo extra e deve funcionar para esse "ultimo")
+
+=> cria coluna de custo e coluna "vezes" (quantas vezes executa aquela instrução)
+	-> operações matemáticas possuem custo constante, assim como atribuições e comparações
+
+linha 1 = n vezes pois passa nela mesmo quando é falso
+	-> abaixo dela reduz um porque não entra quando é falso
+
+somatorio{j=2}{n} tj = 2 + 3 + ... + n	=> soma de PA: (2+n) * (n-1)/2	=> quantidade de vezes que passa naquela linha
+2n-2+n^2-n	/ 2 = n² + n - 2    /2	= n(n1+1)/2	-1
+
+
+O(...) é limitante superior -> sempre abaixo ou menor do que c...		sendo ... uma função
+	-> escolhe o caminho que tem mais passos do algoritmo
+	
+	
+log(n) = busca binária
+operações em lista (ED), achar máximo, mín, soma, ... = n
+
+ordenação por inserção, intercalação, merge
+
+
+
+Theta(1) = c0/c1/...cn		(constante)
+=> alg. recursivos -> relação de reccorência
+	-> T(n) = 2T(n/2) + cn
+		-> 2 chamadas recursidas, cada uma com n/2
+		-> + custo linear
+		
+=> teorema master (Manber)
