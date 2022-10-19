@@ -2,7 +2,7 @@
 	INITIAL_PRINT1:	.asciiz "Coeficiente de x: "
 	NEWLINE:	.asciiz "\n "
 	INITIAL_PRINT2:	.asciiz "Termo independente: "
-	RESULT:		.word 70
+	RESULT:		.asciiz	"Raiz da equacao: "
 .text
 main:
 	# =======================
@@ -30,16 +30,39 @@ main:
 	# ???
 	# chama procedimento para calculo da raiz
 	
+	move	$a0, $s0	# coeficiente de x como primeiro argumento
+	move	$a1, $s1	# temro independente como segundo argumento
 	jal	calcula_raiz
+	
+	move	$s2, $v0	# salva o valor retornado pelo procedimento
+	
+	# =======================
+	# mostrando na tela o resultado
+	li	$v0, 4
+	la	$a0, RESULT
+	syscall
+	li	$v0, 1
+	la	$a0, ($s2)
+	syscall
 
 end:
 	j end
 
+# raiz: ax+b = 0 => x = -b/a
 calcula_raiz:
 	# salvando registradores s0 e s1
-	addi	$sp,  $sp, -8		# 2 valores * 4
-	sw	$s1, 4($sp)
-	sw	$s0, 0($sp)
+#	addi	$sp,  $sp, -8		# 2 valores * 4
+#	sw	$s1, 4($sp)
+#	sw	$s0, 0($sp)
+
+	mul	$t0, $a1, -1		# -1 * b = -b
+	div	$t0, $t0, $a0		# t0 = -b / a
+	
+	mflo	$t0			# armazena 32 LSBs em $t0
+	move	$v0, $t0		# armazena resultado no registrador de retorno
+
+	# retorna à execução do programa
+	jr	$ra
 
 	
 
