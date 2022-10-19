@@ -1,0 +1,31 @@
+EN_PC sempre ligado
+	-> ou 0 quando NOP para travar o processador
+
+NOP : 0 0 0 0 0 0 0 0 0
+SW  : 1 1 0 1 0 0 0 0 0
+LW  : 1 0 1 1 1 1 0 0 0
+LI  : 0 0 0 1 1 0 1 0 0
+ADD : 1 0 1 1 0 0 0 1 0
+ADDI: 0 0 0 1 1 0 0 0 0
+SUB : 1 0 1 1 1 0 0 1 1
+SUBI: 0 0 0 1 1 0 0 0 1
+
+
+EN_RAM: SW, LW
+WR_RAM: SW, LW
+RD_RAM: 
+
+WR_ACC: LW, LI
+
+SEL_OP2:
+
+ULA:
+
+
+Coloca as entradas (opcodes, do 31 ao 26) 
+	Faz um circuito para cada saída (EN_RAM, WR_RAM, ...)
+		Para cada vez que aparecer aquela saida com o valor de 1, faz AND com o opcode
+			0s são negados e 1 mantém
+			Os liga em um AND
+		Liga todos os AND em um OR
+		Liga OR na saída desejada  

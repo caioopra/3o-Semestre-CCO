@@ -105,12 +105,24 @@ void structures::DoublyLinkedList<T>::clear() {
 
 template <typename T>
 void structures::DoublyLinkedList<T>::push_back(const T& data) {
-    insert(data, size());
+    Node* new_node = new Node(data);
+    new_node->prev(tail);
+    new_node->next(nullptr);
+
+    if (new_node->prev() != nullptr) {
+        tail->next(new_node);
+    } else {
+        head = new_node;
+    }
+    tail = new_node;
+
+    size_++;
 }
 
 template <typename T>
 void structures::DoublyLinkedList<T>::push_front(const T& data) {
     Node* new_node = new Node(data, head);
+    new_node->prev(nullptr);
 
     head = new_node;
     if (new_node->next() != nullptr) {  // se não for o unico node
@@ -129,9 +141,7 @@ void structures::DoublyLinkedList<T>::insert(const T& data, std::size_t index) {
         throw std::out_of_range("Index invalido");
     } else if (index == 0) {
         return push_front(data);
-    } else if (index == size_) {
-        return push_back(data);
-    }  // elses não necessarios, facilitar a leitura
+    }
 
     Node* new_node = new Node(data);
     Node* p = head;
@@ -163,12 +173,12 @@ void structures::DoublyLinkedList<T>::insert_sorted(const T& data) {
 
     std::size_t position = 0;
     // verifica se esta antes do ultimo e novo dado é maior
-    while(current->next() != nullptr && data > current->data()) {
-        current_ndoe = current_node->next();
+    while (current_node->next() != nullptr && data > current_node->data()) {
+        current_node = current_node->next();
         position++;
     }
 
-    if (data > current->data()) {
+    if (data > current_node->data()) {
         insert(data, position + 1);
     } else {
         insert(data, position);
@@ -178,17 +188,14 @@ void structures::DoublyLinkedList<T>::insert_sorted(const T& data) {
 template <typename T>
 T structures::DoublyLinkedList<T>::pop(std::size_t index) {
     // index vazio ou lista vazia
-    if (index > size() || size() < 0) {
+    if (index >= size() || size() < 0) {
         throw std::out_of_range("Index invalido");
     } else if (empty()) {  // else não necessario, apenas para legibilidade
         throw std::out_of_range("Lista vazia");
     }
 
-    // verifica se pode usar pop_front ou pop_back
-    if (size() == 1) {
+    if (index == 0) {
         return pop_front();
-    } else if (static_cast<int>(index) == (static_cast<int>(size()) - 1)) {
-        return pop_back();
     }
 
     // implementação de pop
@@ -207,6 +214,8 @@ T structures::DoublyLinkedList<T>::pop(std::size_t index) {
     if (aux->next() != nullptr) {  // caso nao seja o ultimo node
     // depois do removido aponta para o antes dele
         aux->next()->prev(previous_node);
+    } else {  // caso a lista esteja vazia
+        aux->next()->prev(nullptr);
     }
 
     delete aux;
@@ -223,12 +232,15 @@ T structures::DoublyLinkedList<T>::pop_back() {
 
     Node* node = tail;  // inicia no ultimo node
     T saida = node->data();  // pega o dado para retorno
+    tail = tail->prev();
 
-    node = node->prev();  // aponta para o penultimo
+    if (tail != nullptr) {
+        tail->next(nullptr);
+    } else {
+        head = nullptr;
+    }
+
     delete node->next();  // deleta o ultimo node
-    node->next(nullptr);
-
-    tail = node;   // novo tail
     size_--;
 
     return saida;
@@ -243,7 +255,12 @@ T structures::DoublyLinkedList<T>::pop_front() {
     Node* aux = head;
     head = aux->next();
     T saida = aux->data();
-    head->prev(nullptr);
+
+    if (head != nullptr) {
+        head->prev(nullptr);
+    } else {
+        tail = nullptr;
+    }
 
     delete aux;
     size_--;
@@ -329,3 +346,4 @@ template <typename T>
 std::size_t structures::DoublyLinkedList<T>::size() const {
     return size_;
 }
+
