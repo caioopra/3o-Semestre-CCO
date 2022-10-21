@@ -51,9 +51,10 @@ end:
 # raiz: ax+b = 0 => x = -b/a
 calcula_raiz:
 	# salvando registradores s0 e s1
-#	addi	$sp,  $sp, -8		# 2 valores * 4
-#	sw	$s1, 4($sp)
-#	sw	$s0, 0($sp)
+	addi	$sp,  $sp, -12		# 2 valores * 4
+	sw 	$ra, 8($sp)		# salva valor de $ra
+	sw	$s1, 4($sp)
+	sw	$s0, 0($sp)
 
 	mul	$t0, $a1, -1		# -1 * b = -b
 	div	$t0, $t0, $a0		# t0 = -b / a
