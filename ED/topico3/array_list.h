@@ -30,7 +30,7 @@ class ArrayList {
     std::size_t max_size() const;
     T& at(std::size_t index);
     T& operator[](std::size_t index);
-    const T& at(std::size_t index) const;
+    const T& at(std::size_t index) const; 
     const T& operator[](std::size_t index) const;
     // descricao do 'operator []' na FAQ da disciplina
 

@@ -1,0 +1,32 @@
+Capitulo 06 - SOs modernos
+
+=> vivacidade (liveness): garantia que execução das aplicações concorrentes será concluída em algum momento (mesmo que esperando temporariamente por um recurso)
+	-> comprometida se tarefas entrarem em deadlock
+	-> uso de exclusão mútua para garantir
+
+=> recurso: algo que pode ser adquirido, usado e liverado por quem manipula
+	-> variáveis, estruturas de dados, dispositivo de hardware, arquivo, ...
+	=> acesso a recurso:
+		Modo exclusivo: só pode ser acessado por uma tarefa de cada vez (escrita em arquivo, dado, cd, impressora, ...)
+			-> controlado com exclusão mútua
+			-> modo que dá problemas
+		Modo compartilhado: quando várias tarefas/threads faz leitura ou ações que não ocorram falhas no processamento
+			-> leitura de dado e arquivo, saída de áudio, microfone, ...
+
+	=> preemptíveis ou não (preempção: tirar recurso de algo (como processo ou thread))
+		recurso preemptível: pode ser returado do proprietário sem prejuízo
+			-> CPU, memória RAM
+		recurso não preemptível: não pode ser retirado do proprietário sem que ocorram falhas
+			-> gravador de CD
+			-> deadlocks costumam envolver esses
+	=> requisitar o recurso (ao semáforo/mutex) -> usar o recurso (caso disponível) -> liberar o recurso
+	
+
+4 condições para ocorrer deadlock: exclusão mútua, posse e espera, não preempção, espera circular
+-> SOs não fazem detecção de deadlocks
+
+-> detecção e recuperação de deadlocks (procurar ciclos no grafo gerado pelas tarefas e recursos (de quanto em quanto tempo? pode ter deadlocks que não serão resolvidos em pouco tempo, caso ocorram pouco, ou gastar muito tempo tentando procurar, caso ocorram muito)
+	-> pode ter checkpoints (salvar todo estado do programa em mem. não volátil) -> restaura quando der deadlock -> tem que fazer de tempos em tempos (CPU disperdiçada), custoso para salvar em disco
+	-> não é muito usado, mas sim previnir os deadlocks
+-> prevenção de impasses: garantir que pelo menos uma das quatro condições de impasse nunca ocorra
+
