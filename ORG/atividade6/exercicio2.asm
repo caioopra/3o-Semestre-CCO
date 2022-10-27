@@ -1,6 +1,6 @@
 .data
 	.align 2
-	ARRAY:	.word 50 -2 32 4 5 6 7 8 9 -10
+	ARRAY:	.word 99 -2 32 4 5 6 7 8 9 -10
 	FILE: 	.asciiz "fout.dat"
 	.align 4
 	STRING: .space 240
