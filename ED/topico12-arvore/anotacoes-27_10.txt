@@ -1,0 +1,19 @@
+Remoção (3 casos)
+1: remoção de folha (apenas remove e muda o ponteiro)
+2: remoção de nó com um filho:
+	=> aux na folha
+	=> p no que quer remover
+	=> q no anterior ao p
+
+	=> delete p
+	=> q->lado = qux
+
+3: nó com dois filhos => usa no para repor ele (esquerdo (predecessor) ou direito (sucessor))
+	=> substituir pelo sucessor (menor  valor na subárvore a direita)
+		-> achar o que está mais a esquerda (sempre a esquerda até nullptr)
+
+	=> vai até o valor que quer remover: procura o menor na subárvore na direita 
+		-> primeiro vai para direita uma vez e vai andando para esquerda até não ter mais filho a esquerda
+		-> troca data por aquele valor
+		-> remove o valor que foi colocado no passo anterior (chamada recurssiva ou remoção de caso 2 ou 1)
+
