@@ -2,7 +2,6 @@
 	GET_SIZE: 	.asciiz "Informe o tamanho das matrizes (N): "
 	GET_MATRIX1:	.asciiz "MAtriz 1: "
 	GET_MATRIX2:	.asciiz "Matriz 2: "
-	BREAK_LINE:	.asciiz "\n"
 	
 	FILE: .asciiz "fout.txt"
 	.align 4
@@ -109,6 +108,27 @@ main:
 	# converte a matriz resultante em stirng e a salva em .txt
 	jal	ASCII_AND_SAVE
 	
+	# salvar matrix em arquivo
+	OPEN_FILE:
+		li	$v0, 13		# abrir arquivo
+		la	$a0, FILE
+		li	$a1, 1
+		li	$a2, 0
+		syscall
+		move	$s4, $v0	# $s4 = descritor do arquivo
+	
+	SAVE_STRING_FILE:
+		li	$v0, 15
+		move	$a0, $s4
+		move	$a1, $s3
+		li	$a2, 300	# buffer
+		syscall
+	
+	CLOSE_FILE:
+		li	$v0, 16
+		move	$a0, $s4
+		syscall
+
 # ==========================================================================
 # FIM DO PROGRAMA
 # ==========================================================================
@@ -216,142 +236,106 @@ MULT_MATRIXES:
 # Ap√≥s convertida a matriz, salva em arquivo .txt 
 # ==========================================================================	
 ASCII_AND_SAVE:
-	# salva valores de $ra e $s0 - $s3 usados na fun√ß√£o principal (PUSH)
+	# salva valores de $ra e $s0 - $s3 usados na funÁ„o principal (PUSH)
 	addi	$sp, $sp, -20
-	sw	$ra, 16($sp)		# salva $ra
-	sw	$s0, 12($sp)		# salva $s0 - $s3
-	sw	$s1, 8($sp)
+	sw	$ra, 16($sp)				# salva $ra
+	sw	$s0, 12($sp)				# salva $s0 - $s3
+	sw	$s1, 8($sp)		
 	sw	$s2, 4($sp)
 	sw	$s3, 0($sp)
 	
-	# ==========================================================================
-	move	$s0, $a0		# $s0 = numero de itera√ß√µes (tamanho da matriz)
-	li	$s1, 0			# $s1 = conta quantos numeros foram lidos
-	li	$s2, 0			# $s2 = indice do ARRAY (i=0)
-	li	$s3, 0			# $s3 = indice da STRING (j=0)
-	li	$t0, 0			# $t0 = conta quantos digitos um numero tem (reiniciado para cada numero lido)
-	la	$s5, STRING
+	addi, $sp, $sp, -12
+	sw $ra, 8($sp)			#salva o retorno
+	sw $a0, 4($sp)			#salva a0  - endereÁo da matriz de resultado
+	sw $a1, 0($sp)			#salva a1 - N
+	
+	mul $t2, $a1, $a1		#t2 È n≤
+	li $t0, 0			#t0 È iterador do array_int de 0 atÈ n≤ - 1
+	mul $t8, $t2, 4
+	add $t3, $a0, $t8		#iterador do array_ascii (endereÁo absoluto para escrita)
+	
+loop_converte_salva:	
+	mul $t1, $t0, 4			#t1 È o endereÁo relativo do matriz_int
+	add $t1, $t1, $a0		#t1 È o endereÁo absoluto da matriz_int
+	lw $t1, 0($t1)			#t1 guarda valor da matriz na posiÁ„o t1
+	
+teste_sinal:	
+	beq $t1, 0, salva_zero		#se o n˙mero for zero
+	bgt $t1, 0, salva_pos		#se o n˙mero for positivo
 
-	# ==========================================================================
-	move	$s1, $a3		# $s1 = endere√ßo da matriz resultante
-	la 	$s2, STRING		# $s2 = endere√ßo da string
-	move	$s0, $a0
-	li 	$s3, 0			# $3 √© o contador que vai de 0 a N**2
+salva_neg:
+	li $t4, 45			#- em ASCII
+	sw $t4, 0($t3)			#salva - em ASCII
+	addi $t3, $t3, 4
+	mul $t1, $t1, -1 		#multiplica negativo por -1
+	j conta_digitos		
 
-	loop:	
-		mul 	$t0, $s3, 4			# $t0 = endere√ßo relativo do array
-		add 	$t0, $s1, $t0			# $t0 = endereco da matriz resultante
-		lw 	$t0, 0($t0)			# $t0 = valor lido da matriz
-	
-		move 	$a0, $t0			# @param $a0 = valor lido da matriz
-		add 	$s7, $s6, $s7
-		mul 	$t0, $s7, 4			# $t0 = endere√ßo de STRING
-		add 	$t0, $s2, $t0
-		
-		addi	$a1, $t0, 0
-	
-		li 	$s6, 0
-		jal 	convert_int_ascii
-	
-		addi 	$s3, $s3, 1		# s3 incrementa
-		blt	$s3, $s0, loop		# se s3 for menor que N**2, deve repetir o loop
-		j 	escrever_arquivo
+salva_zero:
+	li $t4, 32			#nem + nem -
+	sw $t4, 0($t3)			#salva espaÁo em matriz_ascii
+	addi $t3, $t3, 4
+	j conta_digitos
 
-# ===================================
-# ROTINA DE CONVERTER INT EM ASCII
-# ===================================
-convert_int_ascii:
-	addi 	$sp, $sp, -12			#prepara push para salvar a0 e a1 na pilha
-	sw 	$ra, 8($sp)			#salva o retorno
-	sw 	$a0, 4($sp)			#salva a0 - array[$s3]
-	sw 	$a1, 0($sp)			#salva a1
-	
-	lw 	$a0, 4($sp)			# $a0 = valor da matriz
-	lw 	$a1, 0($sp)			# $a1 endere√ßo de STRING na posicao desejada
+salva_pos:
+	li $t4, 43			# + em ASCII
+	sw $t4, 0($t3)			#salva + em matriz_ascii
+	addi $t3, $t3, 4
 
-	TEST_SIGNAL:	
-		beq	$a0, 0, STORE_ZERO		#se o n√∫mero for zero
-		bgt	$a0, 0, STORE_POSITIVE		#se o n√∫mero for positivo
+conta_digitos:
+	li $s5, 0			#contador de dÌgitos do n˙mero
+	move $s7, $t1			#s7 obtem o inteiro
+loop_conta_digitos:
+	addi $s5, $s5, 1		#incrementa um dÌgito
+	divu $s7, $s7, 10		#divide t1 por 10
+	
+	bgt $s7, 0, loop_conta_digitos	#se chegar em zero, acaba a contagem de dÌgitos
+					#sen„o volta para o loop
 
-	STORE_NEGATIVE:
-		li 	$t0, 45				# "-" em ASCII
-		sw 	$t0, ($a1)
-		mul 	$a0, $a0, -1 			# valor lido multiplicado por -1 (modulo)
-		j 	COUNT_DIGITS		
+loop_salva_memoria:
+	li $t4, 1			#t4 È cresente para calcular potencia
+	move $t5, $s5			#t5 recebe o n˙mero de dÌgitos
+	
+loop_calcula_potencia:
+	subi $t5, $t5, 1		
+	beq $t5, 0, calcula_digito
+	
+	mul $t4, $t4, 10
+	j loop_calcula_potencia
+	
+calcula_digito:
+	divu $t9, $t1, $t4		#t5 È numero t1 dividido pela potÍncia de 10
+	mul $t6, $t9, $t4		#t6 recebe multiplicaÁ„o do quociente pelo divisor
 
-	STORE_ZERO:
-		li 	$t0, 32
-		sw 	$t0, ($a1)			# espaco em branco
-		
-		j COUNT_DIGITS
+	addi $t9, $t9, 48		#t5 È inteiro em ASCII
+	
+	
+	sw $t9, 0($t3)			#salva valor da divis„o em matriz_ascii
+	addi $t3, $t3, 4
+	
+	sub $t1, $t1, $t6		#atualiza a0 -> 135 - 100 = 35
+	
+	addi $t6, $t6, 1		#incrementa contador de dÌgitos salvos 
+	subi $s5, $s5, 1		#agora s5 tem um digito a menos
+	
+	
+	
+	
+	
+	bne $s5, 0, loop_salva_memoria	 	#se n„o chegar em zero, repete o loop de salvamento
+	li $t7, 32				#caractere de espaÁo em ASCII
+	sw $t7, 0($t3)				#salva espaÁo
+	addi $t3, $t3, 4
 
-	STORE_POSITIVE:
-		li 	$t0, 43				# "+" em ASCII
-		
-		sw 	$t0, 0($a1)			# salva o sinal (ASCII)
-
-		li 	$s5, 0				# $s5 = d√≠gitos do n√∫mero	
-		move 	$t2, $a0			# $t2 = $a0
-
-	COUNT_DIGITS:
-		addi	$s5, $s5, 1		# +1 digito
-		divu	$t2, $t2, 10		# divide por 10
-		
-		bgt 	$t2, 0, COUNT_DIGITS	# se 0, contou todos os digitos
-
-		li 	$t6, 1			# conta digitos salvos
-		addi 	$s6, $s5, 2		# $s6 = numero de digitos
+	addi $t0, $t0, 1
+	blt $t0, $t2, loop_converte_salva
 	
-	SAVE_MEM:
-		li	$t3, 1
-		move 	$t4, $s5
-	
-	POWER_10:
-		subi 	$t4, $t4, 1
-		beq	$t4, 0, CALCULATE
-		mul 	$t3, $t3, 10
-		j 	POWER_10
-	
-	CALCULATE:
-		divu	$t5, $a0, $t3		# $t5 = numero em $a0 dividido pela pot√™ncia de 10
-		mul 	$t1, $t5, $t3		# $t5 = quociente x divisor
-
-		addi	$t5, $t5, 48		# +48 para transformar para ASCII
-		mul 	$t7, $t6, 4
-		add 	$t7, $t7, $a1		# $t7 √© endere√ßo absoluto de array_ascii		####################################
-		sw 	$t5, 0($t7)		# salva valor da divis√£o em array_ascii[s3 + t6]
-	
-		sub 	$a0, $a0, $t1		#atualiza a0 -> 135 - 100 = 35
-	
-		addi 	$t6, $t6, 1		#incrementa contador de d√≠gitos salvos 
-		subi 	$s5, $s5, 1		#agora a0 tem um digito a menos
-		bne 	$s5, 0, SAVE_MEM 	#se n√£o chegar em zero, repete o loop de salvamento
-		addi	$t7, $t7, 4		#endere√ßo absoluto para o espa√ßo
-		li 	$t1, 32			#caractere de espa√ßo em ASCII
-		sw	$t1, ($t7)		#salva espa√ßo
-	
-	
-	CONVERSION_END:
-		OPEN_FILE:
-			li	$v0, 13		# abrir arquivo
-			la	$a0, FILE
-			li	$a1, 1
-			li	$a2, 0
-			syscall
-			move 	$s6, $v0	# $s6 = descritor do arquivo
-			
-		SAVE_STRING_FILE:
-			li	$v0, 15		# escrever em arquivo
-			move	$a0, $s6
-			move	$a1, $s5	# move string para $a1
-			li	$a2, 300	# tamanho para buffer
-			syscall
-			
-		CLOSE_FILE:
-			li	$v0, 16		# fecha arquivo
-			move	$a0, $s6
-			syscall
-	
+	lw $a1, 0($sp)
+	lw $a0, 4($sp)
+	lw $ra, 8($sp)
+	addi $sp, $sp, 12
+	jr $ra
+	# ?????????
+	PROCEDURE_END:
 		lw	$s3, 0($sp)
 		lw	$s2, 4($sp)
 		sw	$s1, 8($sp)
@@ -361,4 +345,8 @@ convert_int_ascii:
 		addi	$sp, $sp, 20
 		jr	$ra
 	
-	# FIM DO PROCEDIMENTO
+	# ==========================================================================
+	#
+	# FIM DO PROCEDIMENTO ASCII_AND_SAVE
+	#
+	# ==========================================================================
