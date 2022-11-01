@@ -1,15 +1,11 @@
 .data
 	GET_SIZE: 	.asciiz "Informe o tamanho das matrizes (N): "
-	GET_MATRIX1:	.asciiz "MAtriz 1: "
+	GET_MATRIX1:	.asciiz "Matriz 1: "
 	GET_MATRIX2:	.asciiz "Matriz 2: "
-	BREAK_LINE:	.asciiz "\n"
 	
 	FILE: .asciiz "fout.txt"
 	.align 4
 	STRING: .space 240
-	
-	.align 4
-	result: .asciiz "                                    "
 
 .text
 main:
@@ -105,21 +101,47 @@ main:
 	
 	# multiplica as duas matrizes
 	jal	MULT_MATRIXES
-
+	
 	# converte a matriz resultante em stirng e a salva em .txt
+	move	$a0, $s3
+	move	$a1, $s0
 	jal	ASCII_AND_SAVE
 	
+	# salvar matrix em arquivo
+	OPEN_FILE:
+		li	$v0, 13		# abrir arquivo
+		la	$a0, FILE
+		li	$a1, 1
+		li	$a2, 0
+		syscall
+		move	$s4, $v0	# $s4 = descritor do arquivo
+	
+	SAVE_STRING_FILE:
+		li	$v0, 15
+		move	$a0, $s4
+		move	$a1, $s3
+		li	$a2, 300	# buffer
+		syscall
+	
+	CLOSE_FILE:
+		li	$v0, 16
+		move	$a0, $s4
+		syscall
+
 # ==========================================================================
 # FIM DO PROGRAMA
 # ==========================================================================
 end:
 	j	end
-
 # ==========================================================================
 
 # ==========================================================================	
 # Procedimento que realiza a multiplicação da matriz 1 pela matriz 2
 # Salva o valor na matriz resultante em memória
+# 	$a0 = N**2
+#	$a1 = matriz 1
+#	$a2 = matriz 2
+#	$a3 = matriz resultante
 # ==========================================================================	
 MULT_MATRIXES:
 	# salva valores de $ra e $s0 - $s3 usados na função principal (PUSH)
@@ -132,25 +154,21 @@ MULT_MATRIXES:
 	
 	# ==========================================================================
 	# Calculo da multiplicação das matrizes
-	# 	$a0 = N**2
-	#	$a1 = matriz 1
-	#	$a2 = matriz 2
-	#	$a3 = matriz resultante
 	# ==========================================================================
 	
 	li	$s3, 0			# $s3 = linha (inicialmente 0)
 	
 	VERIFY_END:
-		beq	$s3, $s0, MULT_END_1	# se linha == ordem da matriz, chegou ao final da multiplicacao
+		beq	$s3, $s0, MULT_END_2	# se linha == ordem da matriz, chegou ao final da multiplicacao
 		li	$s4, 0			# $s4 = coluna (=0 para reiniciar seu valor)
 		
 	NEXT_ROW:
-		beq	$s4, $s0, MULT_END_2	# se coluna == N, aumenta valor da linha
+		beq	$s4, $s0, MULT_END_1	# se coluna == N, aumenta valor da linha
 		li	$s6, 0			# $s6 = acumulador de somas
 		j	CALCULATE_VALUE
 		
 	STORE_RESULT:
-		mul  	$t3, $s3, $s0       	# t3 = linha * 3			=> TROCAR POR $S0?
+		mul  	$t3, $s3, $s0       	# t3 = linha * N
         	sll  	$t3, $t3, 2	   	# $t3 = $t3 * 4
         	sll  	$t4, $s4, 2 		# $t4 = coluna * 4
         	add  	$t3, $t3, $t4      	# $t3 = $t3 * $t4 = (linha * 3 * 4) + (coluna * 4)
@@ -165,7 +183,7 @@ MULT_MATRIXES:
         	beq  	$s5, $s0, STORE_RESULT 	# se i == N, salva o valor resultante e nao realiza o calculo
 
 	        # calcula o endereço de acesso na matriz A
-        	mul  	$t5, $s3, $s0		# $t5 = linha * 3			=> TROCAR POR $S0?
+        	mul  	$t5, $s3, $s0		# $t5 = linha * N
 	        sll  	$t5, $t5, 2        	# $t5 = $t5 * 4
         	sll  	$t6, $s5, 2 	       	# $t6 = i * 4
 	        add  	$t5, $t5, $t6        	# $t5 = (linha * 3 * 4) + (i * 4)
@@ -180,22 +198,22 @@ MULT_MATRIXES:
 		add  	$t7, $t7, $a2
 	        lw   	$t7, ($t7)		# valor acessado da matriz 2
 	
-		#mult	$t5, $t7
-		#mflo	$t7
-	        mul  	$t7, $t5, $t7        	# $t7 = $t5 * $t7 (valores acessados nas matrizes A e B)
+		mult	$t5, $t7
+		mflo	$t7
+	        #mul  	$t7, $t5, $t7        	# $t7 = $t5 * $t7 (valores acessados nas matrizes A e B)
 	        add  	$s6, $s6, $t7       	# soma = soma + $t7
 
         	addi 	$s5, $s5, 1          	# i += 1
         	j	CALCULATE_VALUE
         	
-        MULT_END_2:
+        MULT_END_1:
         	addi	$s3, $s3, 1		# linha ++
         	j 	VERIFY_END
         
         # ==========================================================================
         # Restaura registradores e volta ao programa principal
         # ==========================================================================
-        MULT_END_1:
+        MULT_END_2:
 		lw	$s3, 0($sp)
 		lw	$s2, 4($sp)
 		sw	$s1, 8($sp)
@@ -213,156 +231,107 @@ MULT_MATRIXES:
 
 # ==========================================================================	
 # Procedimento que converte uma matriz salva em memória para ASCII
-# Após convertida a matriz, salva em arquivo .txt 
+# Após convertida a matriz, salva em arquivo .txt
+#	$a0 = endereco da matriz resultante
+#	$a1 = N (ordem da matriz)
 # ==========================================================================	
 ASCII_AND_SAVE:
-	# salva valores de $ra e $s0 - $s3 usados na função principal (PUSH)
-	addi	$sp, $sp, -20
-	sw	$ra, 16($sp)		# salva $ra
-	sw	$s0, 12($sp)		# salva $s0 - $s3
-	sw	$s1, 8($sp)
-	sw	$s2, 4($sp)
-	sw	$s3, 0($sp)
+	# salva valores de $ra e $a0 e $a1
+	addi	$sp, $sp, -12
+	sw 	$ra, 8($sp)
+	sw	$a0, 4($sp)
+	sw 	$a1, 0($sp)
 	
-	# ==========================================================================
-	move	$s0, $a0		# $s0 = numero de iterações (tamanho da matriz)
-	li	$s1, 0			# $s1 = conta quantos numeros foram lidos
-	li	$s2, 0			# $s2 = indice do ARRAY (i=0)
-	li	$s3, 0			# $s3 = indice da STRING (j=0)
-	li	$t0, 0			# $t0 = conta quantos digitos um numero tem (reiniciado para cada numero lido)
-	la	$s5, STRING
+	# valores iniciais para os registradores a serem usados
+	li	$t0, 0				# $t0 = percorre a matriz
+	mul 	$t2, $a1, $a1			# $t2 = N**2
 
-	# executa os labels abaixo para cada valor do vetor
-	# le o valor da matriz
-	READ_NUMBER:
-		beq	$s1, $s0, CONVERSION_END	# caso tenha lido todos valores, escreve em arquivo
-		
-		mul	$t1, $s2, 4			# i * 4
-		add	$t1, $t1, $a3			# ARRAY[i * 4]
-		lw	$t1, 0($t1)			# $t1 = valor lido em ARRAY[i]
+	sll	$t8, $t2, 2
+	add 	$t3, $a0, $t8			# $t3 = percorre STRING
+	
+	LOAD_VALUE:	
+		sll	$t1, $t0, 2
+		add 	$t1, $t1, $a0		# endereco na matriz
+		lw 	$t1, 0($t1)		# $t1 = valor lido da matriz
+	
+	VERIFY_SIGNAL:	
+		beq 	$t1, 0, STORE_ZERO
+		bgt 	$t1, 0, STORE_POSITIVE
 
-		move	$t2, $t1			# $t2 = $t1
-		
-		bgt	$t1, 0, GREATER_T_ZERO		# coloca + caso for positivo
-		blt	$t1, 0, LESS_T_ZERO		# coloca - caso for negativo
-		# se nao for nenhum dos dois, não colca sinal
-		j	COUNT_DIGITS
+	# se nao for positivo ou zero, sinal = -
+	STORE_NEGATIVE:
+		li	$t4, 45			# $t4 = sinal (-)
+		sw 	$t4, 0($t3)		# armazena sinal
+		addi 	$t3, $t3, 4		# vai para proxima posicao
+		mul 	$t1, $t1, -1 		# modulo do valor lido
+		j 	COUNT_DIGITS		
 
-		LESS_T_ZERO:
-			li	$t3, 45			# "-"
-			mul	$t1, $t1, -1
-			j 	STORE_SIGNAL
-		
-		GREATER_T_ZERO:
-			li	$t3, 43			# "+"
-			j 	STORE_SIGNAL
-		
-		STORE_SIGNAL:
-			mul	$t4, $s3, 4		# j * 4
-			add	$t5, $t4, $s5		# STRING[j]
-			addi	$s3, $s3, 1		# aumenta 1 no indice de STRING (j)
-			
-			sw	$t3, 0($t5)		# armazena +/-
-			j	COUNT_DIGITS
-			
-			
+	# se zero, sem sinal
+	STORE_ZERO:
+		li 	$t4, 32			# espaco em branco
+		sw 	$t4, 0($t3)
+		addi 	$t3, $t3, 4
+		j 	COUNT_DIGITS
 
-	# conta quantos digitos o valor lido possui para fazer a conversao para ASCII
-	# $t0 conta quantos digitos possui e coloca no buffer
+	# se positivo, sinal = +
+	STORE_POSITIVE:
+		li 	$t4, 43			# $t4 = sinal (+)
+		sw 	$t4, 0($t3)
+		addi 	$t3, $t3, 4
+
 	COUNT_DIGITS:
-	
-		# primeiramente faz divisões sucessivas por 10 até ter valor 0
-		# quando o valor for 0, terminou de achar dígitos válidos e pode salvar o valor
-		addi	$t0, $t0, 1		# $t0 = qtd de dígitos do numero
-		div	$t2, $t2, 10		# $t2 = $t2 / 10
+		li 	$s5, 0			# $s5 = numero de digitos no numero (durante calculo)
+		move 	$s7, $t1		# $s7 = valor
 		
-		bne	$t2, 0, COUNT_DIGITS	# enquanto valor for diferente de 0, conta
+	COUNT_DIGITS_LOOP:
+		addi 	$s5, $s5, 1		# +1 digito
+		divu 	$s7, $s7, 10		# divide valor lido por 10
+		
+		bgt 	$s7, 0, COUNT_DIGITS_LOOP	# enquanto diferente de 0, ha digitos para aumentar
 
-	STORE_NUMBER: 
-		move	$t4, $t1
-		li	$t3, 1			# $t3 = potencia de 10 de quantos dígitos o valor possui-1
-		
-		beq	$t0, 1, STORE		# se só tiver 1 dígito, pode pular para armazenar
-		move	$t2, $t0
-		# calcula a potencia de 10 se necessario
-		TEN_POWER_I:
-			mul	$t3, $t2, 10		# $t3 = valor da potencia de 10 (-1)
-			
-			bne	$t3, 0, NOT_POWER_ONE
-			beq	$t3, 1, NOT_POWER_ONE
-			li	$t3, 1
-			
-			NOT_POWER_ONE:
-				subi	$t2, $t2, 1		# $t2 = auxiliar para potencia
-				blt	$t2, 0, STORE			
-				bne	$t2, 0, TEN_POWER_I
+	LOOP_STORE:
+		li 	$t4, 1			# $t4 = potencia de 10
+		move 	$t5, $s5		# $t5 = numero de digitos
 
-		
-		STORE:
-			# sai do laço com $t3 valendo 10 ^ i-1
-			div	$t4, $t4, $t3 		# valor / 10 ^ (i -1)
-			
-			# prepara valor para proxima iteração ($t1 - $t3*(10^i-1)
-			mul	$t5, $t3, $t4		# $t3 * 10^i-1
-			sub	$t5, $t1, $t5		# $t5 = $t1 - $t5  => valor para proxima iteracao
 
-			add	$t4, $t4, 48		# soma 48 para transpor para ASCII
-		
-			# salva o valor dentro de STRING
-			mul	$t6, $s3, 4
-			add	$t6, $t6, $s5		# STRING[4*j]
+	CALCULATE_POWER:
+		subi 	$t5, $t5, 1		# um digito lido
+		beq 	$t5, 0, CALCULATE_DIGIT  # caso zero, calcula
+	
+		mul 	$t4, $t4, 10
+		j 	CALCULATE_POWER
+	
+	CALCULATE_DIGIT:
+		divu 	$t9, $t1, $t4		# $t9 = numerot / potencia 10
+		mul 	$t6, $t9, $t4		# $t6 = (numero/potencia 10) * potencia 10
 
-			sw	$t4, 0($t6)		# salva ARRAY[i] em STRING[j]
+		addi 	$t9, $t9, 48		# $t9 = valor convertido em ASCII
 	
-		# subtraindo 1 conta quantos dígitos do numero foram escritos
-		subi	$t0, $t0, 1
-		addi	$s3, $s3, 1		# j++
-		move	$t4, $t5		# $t4 = proximo valor do numero lido
-		bne	$t0, 0, TEN_POWER_I 	# se não tiver escrito todos, converte de novo com outra potencia
+		sw 	$t9, ($t3)		# salva valor ASCII
+		addi 	$t3, $t3, 4		# proxima posicao
 	
-	# prepara valores para proximo valor
-	NEXT_VALUE:
-		# salvando espaco em branco:
-		li	$t3, 32			# 32 para colocar espaco em braco
-		mul	$t7, $s3, 4
-		add	$t7, $t7, $s5
-		 
-		sw	$t3, ($t7)		# salva em STRING[i+j]
-		addi	$s3, $s3, 1		# j++
-		
-		# incrementa valores para proxima iteracao
-		addi	$s2, $s2, 1		# i++
-		add	$s1, $s1, 1		# aumenta quantos numeros foram lidos e escritos
-		j	READ_NUMBER
+		sub 	$t1, $t1, $t6		# atualiza valor (1234 - 1000 = 234)
 	
-	CONVERSION_END:
-		OPEN_FILE:
-			li	$v0, 13		# abrir arquivo
-			la	$a0, FILE
-			li	$a1, 1
-			li	$a2, 0
-			syscall
-			move 	$s6, $v0	# $s6 = descritor do arquivo
-			
-		SAVE_STRING_FILE:
-			li	$v0, 15		# escrever em arquivo
-			move	$a0, $s6
-			move	$a1, $s5	# move string para $a1
-			li	$a2, 300	# tamanho para buffer
-			syscall
-			
-		CLOSE_FILE:
-			li	$v0, 16		# fecha arquivo
-			move	$a0, $s6
-			syscall
+		addi 	$t6, $t6, 1		# +1 digito salvo
+		subi 	$s5, $s5, 1
 	
-		lw	$s3, 0($sp)
-		lw	$s2, 4($sp)
-		sw	$s1, 8($sp)
-		sw	$s0, 12($sp)
-		sw	$ra, 16($sp)
-		
-		addi	$sp, $sp, 20
+	bne 	$s5, 0, LOOP_STORE
+	li 	$t7, 32				# espaco em branco
+	sw 	$t7, ($t3)
+	addi 	$t3, $t3, 4
+
+	addi 	$t0, $t0, 1
+	blt 	$t0, $t2, LOAD_VALUE
+	
+	PROCEDURE_END:
+		lw 	$a1, 0($sp)
+		lw	$a0, 4($sp)
+		lw 	$ra, 8($sp)
+		addi 	$sp, $sp, 12
 		jr	$ra
 	
-	# FIM DO PROCEDIMENTO
+	# ==========================================================================
+	#
+	# FIM DO PROCEDIMENTO ASCII_AND_SAVE
+	#
+	# ==========================================================================
