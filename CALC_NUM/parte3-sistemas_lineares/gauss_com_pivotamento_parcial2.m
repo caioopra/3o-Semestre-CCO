@@ -7,8 +7,18 @@ format long
 # sistema = matriz de coeficientes
 # b = vetor de termos independentes
 
-sistema = [1 -1 1; 2 3 -1; -3 1 1];
-b = [1 4 -1];
+sistema = [1 1 1.5 1 1.5 0 0 0 0 0;
+           0 1 0.01 0.51 1.5 0.5 0 0 0 0;
+           2.9 1 2 1 1 0 5 0 0 0;
+           9 1 0.2 1 1 0 0 1.5 0 0;
+           1 0 2 0 0 1 1 1 0 2;
+           0 1 0 0 -2 0 1 -1 1 1 ;
+           1 0 2 0 0 0 1 1 1 0;
+           0 1 0 0 2 0 1 1 1 -1;
+           0 0 1 0 2 1 -1 0 -1 -1;
+           0 1 0 0 2 0 1 0 1 1];
+           
+b = [4 -3 1 -1 -1 0 -1 1 3 -2];
 n = length(b);
 
 # para o calculo do residuo
@@ -20,12 +30,14 @@ for i = 1 : n
     o(i) = i;
 endfor
 
+
 # escalonamento
 for k = 1 :  (n - 1)
     # processo de  troca das linhas
-    # encontrar maior elemento em modulo
+
     maior = abs(sistema(o(k), k));  # considerando a(k,k) o maior inicialmente
     pivo = k;   # linha pivo
+    
     # percorrendo as linhas para procurar o maior pivo
     for i = k + 1 : n
         if (abs(sistema(o(i), k)) > maior)
@@ -36,11 +48,9 @@ for k = 1 :  (n - 1)
     
     if (pivo > k)
         # SEM TROCA DE LINHAS FISICAMENTE
-        for j = k : n
-            aux = o(k);
-            o(k) = o(pivo);
-            o(pivo) = aux;
-        endfor
+        aux = o(k);
+        o(k) = o(pivo);
+        o(pivo) = aux;
     endif
     
     # triangularizacao da matriz
@@ -67,12 +77,10 @@ for i = (n - 1) : -1 : 1  # inicio : passo : parada
   x(i) = (b(o(i)) - soma) / sistema(o(i), i);
 endfor
 
-printf("Resultado: \n");
 sistema
 b
-printf("Solução: \n")
 x
 o
 
 # calculo do residuo
-residuo = abs(copia_b' - copia_sistema * x')'
+r = abs(copia_b' - copia_sistema * x')'
