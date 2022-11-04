@@ -1,0 +1,167 @@
+INTRODUÇÃO A ÁRVORES
+=> árvores são estruturas de dados que se caracterizam por organização hierárquica entre seus elementos
+=> conjunto finito de um ou mais nodos/nós
+	=> existe raíz da árvore
+	=> demais nodos forma n>=0 conjuntos disjuntos (cada um é uma árvore -> subárvore)
+		-> não há mistura entre nós de "galhos diferentes"
+
+=> não há ciclos em árvore (devem ser conjuntos disjuntos)
+
+=> linha que liga dois nodos da árvore = aresta
+=> existe um caminho entre dois nodos A e B se à partir de A é possível chegar em B percorrendo as arestas que os ligam
+	-> existe sempre um caminho entre a raiz e qualquer nodo da árvore
+
+=> se houver caminho entre A e B, começando em A:
+	A = nodo ancestral de B
+	B = nodo descendente de A
+	-> se tiver uma única aresta: A é pai de B e B é nodo filho de A
+=> dois nodos filhos do mesmo pai = nodos irmãos (qualquer, exceto a raiz, tem único pai)
+=> nodo terminal da árvore = folha -> todos filhos são nulos
+=> grau de um nodo = número de nodos filhos (folha tem grau zero)
+=> nível de um nodo = distância a partir da raíz (raiz = nível 0)
+=> grau da árvore = grau do nodo com maior grau
+=> nível da árvore = igual ao nível do nodo de maior nível na árvore (maior caminho)
+
+
+ÁRVORES BINÁRIAS - CONCEITOS GERAIS
+=> pode-se transforma árvore n-ária em árvore (subárvore) binária:
+	1. raiz da árvore (subárvore) será a raíz da árvore (subárvore) binária
+	2. nodo filho mais à esquerda da raíz da árvore será o nodo filho à esquerda da raiz da árvore binária 
+	3. cada nodo irmão de A, da esquerda para direita, será o nodo filho à direita do nodo irmão da esquerda, até que todos nodos filhos da raiz da árvore (subárvore) já tenham sido incluídos na árvore binária em construção
+	=> algoritmo recursivo
+
+classe tNodo {
+	tNodo* filhoEsquerda;
+	tNodo* filhoDireita;
+	T* info;
+};
+
+
+=> tornar árvore com altura mínima
+
+Construção de árvore binária a partir de dados
+ - usa nodo para raiz
+ - numero de nodos a esquerda = numero de nodos / 2
+ - numero de nodos a direita  = numero de nodos - num. esquerda - 1
+
+tNodo* funcao constroiArvore(int numeroDeNodos)
+	int nodosAEsqurda, nodosADireita;
+	T *info;
+	tNodo* novoNodo;
+
+	se numeroDeNodos = 0:
+		return NULL
+
+	nodosAEsquerda = numeroDeNodos / 2
+	nodosADireita = numeroDeNodos - nodosAEsquerda - 1
+
+	aloque(info)
+	ler(info)
+	aloque(novoNodo)
+	novoNodo->info = info
+
+	novoNodo->filhoEsquerda = constroiArvore(nodosAEsquerda)
+	novoNodo->filhoDireita = constroiArvore(nodosADireita)
+
+	return novoNodo
+
+
+Percurso em árvore binária
+=> preordem/preorder (r, e, d): raiz-esquerda-direita
+	-> expressão prefixada (não precisa de parenteses, quando tiver operando suficiente, avalia a função)
+
+	funcao Preordem(tNodo* raiz)
+		se raiz != NULL
+			imprime (raiz->info)
+			Preordem(raiz->filhoEsquerda)
+			Preordem(raiz->filhoDireita)
+
+
+=> Emordem /inodrder (e, r, d): percorre suba. esquerda - olha raiz - percorre sub.direita
+	-> expressão infixada (ordem matemática usual; sem precedencia de operador, precisa de parenteses)
+
+	funcao Emordem(tNodo* raiz)
+		se raiz != NULL
+			Emordem(raiz->filhoEsquerda)
+			imprime(raiz->info)
+			Emordem(raiz->filhoDireita)
+
+=> Pósordem/postorder(e, d, r)
+	-> expressão posfixada (operador de pilha)
+
+	funcao Posordem(tNodo* raiz)
+		se raiz != NULL
+			Emordem(raiz->filhoEsquerda)
+			Emordem(raiz->filhoDireita)
+			imprime(raiz->info)
+
+
+ÁRVORE BINÁRIAS DE BUSCA
+
+tNodo* busca(tInfo chave, tNodo* ptr)			// iterativo
+	enquanto ptr != NULL && ptr->info != chave
+		//esquerda ou direita
+		se ptr->info < chave
+			ptr = ptr->filhoDireita
+		senao
+			ptr = ptr->filhoEsquerda
+	return ptr  // retorna nulo se não houver o dado na arvore
+
+tNodo* insercao(tNodo* raiz, T info)
+	T* oNovo
+	se (info < raiz->info)
+		// inserindo a esquerda
+		se raiz->filhoEsquerda == NULL
+			oNovo = aloque(tNodo)
+			oNodo->info = info
+			oNovo->filhoEsquerda = NULL
+			oNovo->filhoDireita = NULL
+			raiz->filhoEsquerda = oNovo
+		senao
+			raiz = insercao(raiz->filhoEsquerda, info)
+	senao
+		// inserindo a dirita
+		se (raiz->filhoDireita == NULL)
+			oNovo = aloque(tNodo)
+			oNovo->info = info
+			oNovo->filhoEsquerda = NULL
+			oNovo->filhoDireita = NULL
+			raiz->filhoDireita = oNovo
+		senao
+			raiz = insercao(raiz->filhoDireira, info)
+
+
+// passa raiz e info que quer eliminar
+tNodo* delete(tInfo info, tNodo* arv):		log(n)
+	t*nodo tmp, filho
+	se arv = NULL
+		return Aarv
+	se (info < arv->info)  // vai para esquerda
+		arv->filhoEsquerda = delete(info, arv->filhoEsqeurda)
+		return arv
+	senao
+		se info > arv->info  // vai para direita
+			arv->filhoDireita = delete(infoe, arv->filhoDireita)
+			return arv
+
+		senao  // encontrou elemento que quer deletar, agora continua
+			se (arv->filhoDireita == nuLL)  // procura e substitui
+				tmp = minimo (arv->filhoDireita)   // endereco do mais a esquerda
+				arv->info = tmp->info   // sobrescreve o dadod
+				arv->filhoDireita = delete(arv->info, arv->filhoDireita)  // manda eliminar o minimo
+				return arv
+			senao  // 1 filho	
+				tmp = arv
+				se (arv->filhoDireita != null)
+					filho = arv->filhoDireita
+					retunr filho
+				senao
+					se arv->filhoEsquerda != null
+						filho = arv->filhoEsquerda
+						return filho
+					senao  // folja
+						liberer arv
+						return NULL
+
+		
+		
