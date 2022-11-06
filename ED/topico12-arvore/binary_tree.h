@@ -12,6 +12,9 @@ namespace structures {
 template<typename T>
 class BinaryTree {
   public:
+    // Construtor da classe BinaryTree
+    BinaryTree();
+    
     // Destrutor da classe BinaryTree
     ~BinaryTree();
 
@@ -215,6 +218,12 @@ class BinaryTree {
 }  // namespace structures
 
 #endif
+
+template <typename T>
+structures::BinaryTree<T>::~BinaryTree() {
+    root = nullptr;
+    size_ = 0;
+}
 
 // cria ArryList contendo todos os nodos (nesse caso, com pre_order)
 // deleta os dados contindos na lista e os remove da lista
