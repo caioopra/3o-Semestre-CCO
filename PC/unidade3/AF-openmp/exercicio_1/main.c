@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     double* c = (double*)malloc(sizeof(double) * size);
 
     // definicao do numero de threads para execucao
-    omp_set_num_threadas(n_threads);
+    omp_set_num_threads(n_threads);
 
     // Guarda ponto de início da computação
     double start = omp_get_wtime();

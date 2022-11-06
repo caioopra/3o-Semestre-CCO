@@ -5,11 +5,13 @@
 
 double standard_deviation(double* data, int size) {
     double avg = 0;
+    #pragma omp parallel for schedule(dynamic, 1) reduction(+:avg)
     for (int i = 0; i < size; ++i) 
         avg += data[i];
     avg /= size;
 
     double sd = 0;
+    #pragma omp parallel for firstprivate(avg) schedule(dynamic, 1) reduction(+:sd) 
     for (int i = 0; i < size; ++i) 
         sd += pow(data[i] - avg, 2);
     sd = sqrt(sd / (size-1));
@@ -28,8 +30,12 @@ int main(int argc, char** argv) {
     srand(time(NULL));
     for (int i = 0; i < tamanho; ++i) 
         data[i] = 100000*(rand()/(double)RAND_MAX);
-    
-    printf("sd: %g\n", standard_deviation(data, tamanho));
+
+    for (int i = 0; i < tamanho; ++i) {
+        printf("%f ", data[i]);
+    }
+
+    printf("\nsd: %g\n", standard_deviation(data, tamanho));
 
     free(data);
 
