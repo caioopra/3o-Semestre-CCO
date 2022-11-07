@@ -1,8 +1,10 @@
 clc
 clear
 
-a = [4 2 3; 2 -4 -1; -1 1 4];
-b = [7 1 -5];
+#a = [4 2 3; 2 -4 -1; -1 1 4];
+#b = [7 1 -5];
+a=[-2 1 -2; -4 3 -3; 2 2 4];
+b = [1 4 4];
 n = length(b);
 
 # CALCULO DE L & U
@@ -15,19 +17,20 @@ for k = 1 : n
         endfor
         L(i, k) = a(i, k) - soma;
     endfor
-    
+
     # calculo de U
     U(k, k) = 1;    # diagonal principal (k, k) = 1
     for j = k + 1 : n
           # somatorio
           soma = 0;
           for t = 1 : k - 1
-                soma = soma + L(k, t) * U(t, j); 
+                soma = soma + L(k, t) * U(t, j);
           endfor
           U(k, j) = (a(k, j) - soma) / L(k, k);
     endfor
 endfor
-
+L
+U
 # Ly = b  => caso tenha vários sistemas, mas com mesmo b, pode decompor apenas uma vez
 # encontrando y (substituição direta)
 # varre sistema de cima para baixo e encontra y

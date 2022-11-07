@@ -2,10 +2,8 @@ clc
 clear
 
 # sistema de entrada
-#a = [3 -1 -1; 1 3 1; 2 -2 4];
-#b = [1 5 4];
-a = [3 4 3; 1 5 -1; 6 3 7];
-b = [10 7 15];
+a = [3 -1 -1; 1 3 1; 2 -2 4];
+b = [1 5 4];
 n = length(b);
 
 # estimativa inicial
@@ -14,6 +12,9 @@ xa = x0;    # x anterior; salva para calcular d
 
 erro = 10^-7;  # precisao
 d = 1;  # valor qualquer maior que erro
+
+# testado com: 1.05, 0.95, 0.9; 0.85 (=12); 0.8
+w = 0.85;
 
 k = 0;   # numero de iterações
 while (d > erro)
@@ -25,13 +26,11 @@ while (d > erro)
                 soma += a(i, j) * x0(j);
             endif
         endfor
-        x0(i) = (b(i) - soma) / a(i, i);
+        x0(i) = (1-w) * x0(i) + w * (b(i) - soma) / a(i, i);
     endfor
     # depois de terminado todas as linhas
-    d = sum(abs(x0-xa));  # poder usar norma1(sum) ou max
-    xa = x0
-    x0-xa
-    pause
+    d = max(abs(x0-xa));  # poder usar norma1(sum) ou max
+    xa = x0;
 endwhile
 
 k

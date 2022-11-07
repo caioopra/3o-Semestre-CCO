@@ -3,7 +3,7 @@ clc
 format long
 
 # entrada
-# a = matriz de coeficientes
+# sistema = matriz de coeficientes
 # b = vetor de termos independentes
 
 sistema = [1 2 1 -1; 3 2 4 4; 4 4 3 4; 2 0 1 5];
@@ -19,6 +19,7 @@ for k = 1 :  (n - 1)
       endfor
       b(i) = b(i) - multiplicador * b(k);
     endfor
+    pause
 endfor
 
 # retrossubstituição
@@ -26,12 +27,12 @@ x(n) = b(n) / sistema(n, n);
 
 for i = (n - 1) : -1 : 1  # inicio : passo : parada
   soma = 0;
-  
+
   # somatorio
   for j = (i + 1) : n;
     soma += sistema(i, j) * x(j);
   endfor
-  
+
   x(i) = (b(i) - soma) / sistema(i, i);
 endfor
 

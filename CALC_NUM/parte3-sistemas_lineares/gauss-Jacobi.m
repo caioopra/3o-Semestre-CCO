@@ -2,8 +2,10 @@ clc
 clear
 
 # sistema de entrada
-a = [3 -1 -1; 1 3 1; 2 -2 4];
-b = [1 5 4];
+#a = [3 -1 -1; 1 3 1; 2 -2 4];
+#b = [1 5 4];
+a = [3 4 3; 1 5 -1; 6 3 7];
+b = [10 7 15];
 n = length(b);
 
 # estimativa inicial
@@ -28,7 +30,9 @@ while (d > erro)
     endfor
     # depois de terminado todas as linhas
     d = sum(abs(x-x0));   # poder usar norma1(sum) ou max
-    x0 = x;
+    x0 = x
+    x-x0
+    pause
 endwhile
 
 k

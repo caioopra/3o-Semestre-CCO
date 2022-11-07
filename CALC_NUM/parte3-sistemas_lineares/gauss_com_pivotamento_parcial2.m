@@ -17,8 +17,9 @@ sistema = [1 1 1.5 1 1.5 0 0 0 0 0;
            0 1 0 0 2 0 1 1 1 -1;
            0 0 1 0 2 1 -1 0 -1 -1;
            0 1 0 0 2 0 1 0 1 1];
-           
+
 b = [4 -3 1 -1 -1 0 -1 1 3 -2];
+
 n = length(b);
 
 # para o calculo do residuo
@@ -37,7 +38,7 @@ for k = 1 :  (n - 1)
 
     maior = abs(sistema(o(k), k));  # considerando a(k,k) o maior inicialmente
     pivo = k;   # linha pivo
-    
+
     # percorrendo as linhas para procurar o maior pivo
     for i = k + 1 : n
         if (abs(sistema(o(i), k)) > maior)
@@ -45,14 +46,14 @@ for k = 1 :  (n - 1)
             pivo = i;  # linha do maior pivo em modulo
         endif
     endfor
-    
+
     if (pivo > k)
         # SEM TROCA DE LINHAS FISICAMENTE
         aux = o(k);
         o(k) = o(pivo);
         o(pivo) = aux;
     endif
-    
+
     # triangularizacao da matriz
     for i = (k + 1) : n
         multiplicador = sistema(o(i), k) / sistema(o(k), k);
@@ -61,6 +62,10 @@ for k = 1 :  (n - 1)
         endfor
         b(o(i)) = b(o(i)) - multiplicador * b(o(k));
     endfor
+    sistema
+    b
+    o
+    pause
 endfor
 
 # retrossubstituição
@@ -68,12 +73,12 @@ x(n) = b(o(n)) / sistema(o(n), n);
 
 for i = (n - 1) : -1 : 1  # inicio : passo : parada
   soma = 0;
-  
+
   # somatorio
   for j = (i + 1) : n;
     soma += sistema(o(i), j) * x(j);
   endfor
-  
+
   x(i) = (b(o(i)) - soma) / sistema(o(i), i);
 endfor
 
