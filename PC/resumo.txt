@@ -1,0 +1,285 @@
+================================
+UNIDADE 1
+================================
+Introdução à Programação concorrente
+=> concorrência: múltiplas tarefas logicamente ativas em determinado momento
+	-> alterandno entre execução das tarefas
+	-> não executa ao mesmo tempo
+=> paralelismo:  múltiplas tarefas realmente sendo executadas ao mesmo tempo
+	-> concorrência + hardware paralelo + desempenho 
+	-> se é paralelo, é concorrente
+
+=> mais fácil para expressar certos problemas
+=> melhor uso dos recursos computacionais
+=> executar aplicações em menos tempo ou melhorar precisão nos resultados sem impactar no tempo de execução
+
+=> debug mais difícil (comportamento não determinístico)
+=> controle de concorrência (evitar alteração de dado ao mesmo tempo e ordem de execução)
+=> corretudo mais difícil (não determinismo)
+
+=> exclusão mútua: garantir que duas tarefas do programa não alterem um mesmo dado ao mesmo tempo
+	-> regiões críticas
+=> sincronização: garantir ordem de execução das tarefas
+
+=> dependêncida de dados, sua distribuição, sincronização, ...	= problemas
+
+=> C, C#, python, java, haskell, Erlang, Clojure, Elixir, Go, Ruby, Rust, ...
+
+-----------------------------------
+
+Plataformas de execução
+
+- Multiprocessadores
+=> todos processadores acessam uma memória compartilhada
+=> comunicação por compartilhamento de memória
+=> multicoress (CMP = chip multiprocessing)
+=> múltiplos processadores em uma mesma máquina (cada um em um socket)
+
+=> 2 formas de organizar a memória:
+	=> Uniform Memory Access (UMA)
+		-> memória centralizada
+		-> acessos levam o mesmo tempo
+			-> latência e largura de banda padrão; previsibilidade
+		-> Todos os processadores ligados à uma interconexão, que esta está ligada à uma memória
+	=> Non-uniform Memory Access (NUMA)	
+		-> memória distribuída em módulos
+		-> tempo de acesso depende se a memória local ou remota
+		-> há espaço de endereçamento, composto por memórias isoladas entre si, cada uma ligada à um processador e estes à uma interconexão
+
+- Aceleradores: usados junto de CPUs para acelerar computação
+=> GPUs, multicores, manycores, FPGAs, ...
+
+- Multicomputadores
+=> NORMA: NO Remote Memory Access; computadores inteiros replicados, cada um com sua memória e comunicação por rede
+=> classificação:
+	=> NOW: Network of workstations
+		-> desktops interligados; rede tradicional de baixo custo; ambientes oportunistas
+	=> COW: Cluster of workstatios
+		-> NOW para alto desempenho; redes de baixa latência; componentes redundantes; top500
+	=> Grid/Grade
+		-> máquina composta por componentes distribuídos geograficamente; controle descentralizado; interfaces e protocolos padronizados
+	=> Cloud
+		-> similar a computação de grid; recursos são usados sob demanda (escalável e pago com uso); recursos virtualizados
+
+-----------------------------------
+
+Extração de concorrência (exemplo prático)
+
+=> Double-Precision A.X Plus Y (DAXPY)
+	-> dois vetores, x e y, de números em precisão dupla e um escalar "a", calcula y = ax+y
+
+#define T 100000
+#define a 42
+...
+	double x[T], y[Y];
+	int i;
+	for (i = 0; i < T; i++)
+		y[i] = a*x[i] + y[i]
+
+=> tarefa = conjunto de instruções + dados
+=> pode-se criar concorrência criando tarefas e dando à elas valores para calcular do for ou um valor
+
+=> criação de tarefas: por abstrações básicas do SO e/ou linguagem como processos e threads
+
+-----------------------------------
+
+Noções de Análise de desempenho
+
+=> Tempo(n): tempo de execução usando n núcleos
+=> Speedup(n): ganho de desempenho da execução paralela com n núcleos de processamento sobre o tempo de execução sequencial
+	Speedup(n) = Tempo(1) / Tempo(n)
+=> Eficiência(n): aproveitamento da plataforma
+	Eficiência = Speedup(n) / n
+
+=> Lei de Amdahl: representa ganho máximo teórico de desempenho de programa paralelo
+	-> divide algoritmo em parcela serial e outra paralela
+	-> parcela serial: f entre 0 e 1
+	-> parecela paralela: 1 - f
+	-> núcleos/num. processadores: n
+=> cálculo do tempo teórico segundo essa lei: 
+	parcela serial: f e [0; 1]
+	número de núcleos: n
+	
+	Tempo(n) = Tempo(1) * f + Tempo(1) * (1-f)/n
+		=> tempo(1) * f = serial
+		=> Tempo(1) * (1-f)/n = paralela
+	Tempo(n) = Tempo(1) * (f + (1-f)/n)
+
+	Speedup(n) = 1 / (f + (1-f)/n)
+
+-----------------------------------
+
+Introdução a linguagem C
+
+char: %c
+int : %d
+unsigned int: %u
+unsigned long int: %lu
+float: %f
+double: %g
+char* (string): %s
+
+=> função que recebe matriz, precisa ao menos do valor da segunda dimensão especificado na declaração
+=> strings = array de char
+	-> terminam em '\0' => def. fim da string
+	-> tamanho para armazenar o texto mais NUL
+
+=> string.h:
+	strlen() => tamanho da string
+	strcpy() => copia string para outra
+	strcat() => concatena duas strings
+	strcmp() => compara duas strings
+=> stdlib.h:
+	atoi(str) => converte string para int
+
+=> malloc(): aloca área contígua de memória e retorna ponteiro para início da área (NULL caso erro)
+	type* ptr = (type *) malloc(byte-size)
+	-> type = tipo do dado a alocar
+	-> byte-size = quantidade de bytes a aserem alocados (múltiplo do tipo de dados)
+	int* array_int = (int *) malloc(100 * sizeof(int))	=> arrray de 100 inteiros
+=> free(): desaloca área alocada por malloc()
+	free(ptr);
+
+typedef struct {
+	...
+} t_novo_tipo
+
+
+================================
+UNIDADE 2
+================================
+
+Processos
+
+=> programa: entidade estática e permanente; sequência de instruções; passivo sob ponto de vista do SO
+=> processo: abstração que representa um programa em execução; entidade dinânica (altera estado ao longo da execução)
+	-> programa (código), dados e contexto (valores; registradores)
+	-> podem ser:
+		instâncias de programas diferentes
+		diferentes instâncias de um mesmo programa
+=> quando instâncias de programas diferentes: dois programas diferentes sendo executados pelo processador
+	-> "instancia de um navegador e instancia de notepad"
+=> quando diferentes instancias de mesmo programa: mesmo código (programa) mas com dados e momentos de execução (contextos) diferentes
+	-> mesmo programa pode ter várias instancias em execução
+	-> forma que SO enxerga um programa e possibilita a execução
+	-> dois chromes abertos ao mesmo tempo
+
+=> Ciclo de vida de um processo:
+	-> são criados e destruídos (momento e forma depende do SO)
+		-> normalmente com "chamadas de sistema"
+	-> após criação, é executado pelo processador (ciclo de processador), podendo dexar para realizar I/O
+=> dois tipos de processo: processos de sistema (daemons) e processo de usuário
+=> perfis de processo:
+	-> CPU-bound: tempo de execução do processo definido principalmente pelo tempo dos seus ciclos de processador
+	-> Memory-bound: tempo de exec. def. princ. pelo tempo de acesso à memória
+	-> I/O-bound: tempo def. pela duração das operações de I/O
+
+=> processos alternam entre diferentes estados durante ciclos de vida
+	-> criação: quando usuário executa programa, SO cria um processo	
+		-> chamadas de sistema (fork, spawn, ...)
+		-> PID (process identification)
+	-> pronto: pronto para ser executado pela CPU
+		-> há fila de processos prontos, da qual SO escolhe (seleção)
+		-> escalonador: do SO, seleciona processo pronto (depende do algoritmo de escalonamento e com critérios diferentes (tempo de uso da CPU, prioridade)
+	-> em execução: executado pela CPU
+		-> fica em execução até ser preemptado -> volta para pronto e outro processo é selecionado
+			-> preempção depende do algo. de escalonamento (limite de tempo de  CPU atingido, um com mais prioridade fica pronto, ...)
+	-> bloqueado: ao realizar chamada de sistema -> armazenados em filas (uma para cada dispositivo de I/O)
+		-> chamada de sistema quando processo requisita algum serviço do SO => gera interrupção após término do tratamento da requisição
+	-> destruição (término): memória usada prlo processo é liberada
+		-> erro, intervenção de outro processo (kill), ...
+
+=> SO tem tabela de processos: entradas na tabela=PCB (Process Control Block, ou descritor do processo)
+	-> entradas contém informações sobre contexto do processo (regs, PC, SP, estado, PID, PID do pai, diretório, estatísticas, ...)
+
+Processos no Linux
+=> fork()
+	-> retorna > 0 para o processo pai (PID do filho criado)
+	-> retorna   0 para o processo filho
+=> processo filho é cópia do proceso pai (ambos executam o código que vier após o fork)
+
+=> wait(NULL) permite processo aguardar término de um filho
+	-> retorno:
+		>= 0 : PID do processo filho que terminou
+		 -1  : quando não tem mais filhos
+=> para que cada processo espero o término de todos seus filhos: while (wait(NULL) >= 0);
+
+=> código simples:
+#include <unistd.h>
+#include <sys/wait.h>
+...
+	pid_t pid;
+	pid = fork();
+
+	if (pid >= 0) {  // conseguiu criar o processo
+		if (pid == 0)
+			Filho();
+		else {
+			Pai();
+			wait(NULL);  // espera o filho
+		}
+		return 0;
+	} else // erro e não criou (< 0)
+		printf(...)
+	return 1
+
+=> processos não compartilham o mesmo espaço de endereçamento
+=> pai e filho possuem cópias idênticas dos dados após fork()
+=> não compartilham variáveis globais, cada um possui cópia delas em seu espaço de endereçamento
+
+=> top, htop, ps (lista processos ativos), kill, pstree
+
+-----------------------------------
+
+Threads e Compartilhamento de Dados
+=> threads = linhas de execução independentes de um processo (por padrão, 1 processo tem 1 thread)
+	-> threads de mesmo processo compartilham memória e alguns recursos do SO
+=> info. mantida: PC, registradores, pilha de execução, estado
+=> mais barato/rápido para gerenciar
+
+POSIX Threads
+=> POSIX = Portable Operating System Interface; define API para compatibilidade de software com variantes de Unix e outros SOs
+=> SO cria processo quando inicia program -> contem uma thread (main thread), que pode criar threads filhas/trabalhadoras (que podem criar outras)
+=> escalonamento: Linux usa threads em espaço de núcleo e são escalonáveis individualmente
+
+---> pthread_create(thread, attr, start_routine, arg)
+	-> identificador único retornado pela criação da thread (passa endereço)
+	-> atributos (padrão NULL)
+	-> rotina que executa uma vez quando thread for criada
+	-> argumento para start_routine 	((void*)&argumento) -> converter de volta: tipo variavel = *((tipo*)argumento)
+---> pthread_exit(retval)	-> dentro da execução da thread o faz para terminar/retornar
+	-> valor a retornar para a thread pai
+---> pthread_join(thread, retval)	-> na thread que criou a thread
+	-> id único retornado por pthread_create(...)
+	-> var. que armazena valor passado para a função pthread_exit() => NULL para não armazenar
+
+#include <pthread.h>
+#include <stdio.h>
+void * print_hello(void *arg) {
+	pthread_t tid = pthread_self();
+	printf("Thread %u: Hello World!\n", (unsigned int) tid);
+	pthread_exit(NULL);
+}
+int main(int argc, char **argv) {
+	pthread_t thread;
+	pthread_create(&thread, NULL, print_hello, NULL);
+	pthread_join(thread, NULL);
+return 0;
+}
+
+=> compartilhamento de dados em memória entre threads em um mesmo processo com leitura/escrita em variáveis na memória
+
+=> condição de corrida: duas ou mais threads mudam mesmo conjunto de dados concorrentemente; resultado depende da ordem que acessos aos dados são feitos
+=> reigão/seção crítica: partes do program concorrente em que tem acesso à memória compartilhada
+	-> precisa proteger com mecanismo de exclusão mútua (evitando condição de corrida)
+=> exclusão mútua: mecanismo de controle de concorrência que permite que apenas uma thread execute uma região crítica por vez
+	-> threads que tentam acessar uma região crítica já ocupada são bloqueadas e aguardam sua vez
+
+=> requisitos de mecanismo que impelmente exclusão mútua:
+	1. duas ou mais threads nunca podem estar simultaneamente dentro de uma mesma região crítica
+	2. deve funcionar para número qualquer de processadores/cores
+	3. threads só são bloqueadas se estiverem tentando acessar uma mesma região crítica ao mesmo tempo
+	4. nenhuma thread pode esperar eternamente para entrar em região crítica
+
+=> mecanismos de ex. mútua: algo. de Peterson, spin-locks, mutexes
+=> mec. de ex. mutua e sincronização: semáforos
