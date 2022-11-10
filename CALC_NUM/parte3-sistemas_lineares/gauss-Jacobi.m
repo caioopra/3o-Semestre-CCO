@@ -31,7 +31,6 @@ while (d > erro)
     # depois de terminado todas as linhas
     d = sum(abs(x-x0));   # poder usar norma1(sum) ou max
     x0 = x
-    x-x0
     pause
 endwhile
 
