@@ -1,0 +1,41 @@
+GIL (global intepreter lock): liberado quando thread faz I/O ou outra thread aguarda execução
+
+-------------------------
+Thrads
+
+-=-=-=-
+import threading
+def codigo():
+	...
+
+thread1 = Thread(target=codigo())
+-=-=-=-
+
+class Thread
+	-> group: criação de grupos de threads
+	-> target: função ou lambda
+	-> name: nome da thread (Thread-N por padrão)
+	-> args: tupla de argumetnos enviados à thread
+	-> kwargs: dict de argumentos enviados
+	-> daemon: indica se é thread de background; encerrada quando todas threads não-daemon encerram sua execução
+
+métodos:
+	.run(): código executado pela thread (pode usar herança pra sobrescrever ou alterar com parâmetro target do construtor
+	.start(): inicia execução da thread
+	.is_alive(): informa se a thread está vida (iniciada e ainda naõ terminou)
+	.join(): aguarda thread terminar
+
+atributos da classe Thread:
+	daemon: indica se é daemon
+	name
+
+-=-=-=-
+thread1 = Thread(target=codigo)
+thread2 = Thread(target=codigo)
+thread1.start()	# inicia tthread1
+thread2.start() # inicia thread2
+
+...
+thread1.join()	# espera fim da thread1
+thread2.join()	# espera thread2
+
