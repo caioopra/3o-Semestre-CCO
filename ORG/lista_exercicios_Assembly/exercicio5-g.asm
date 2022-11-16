@@ -1,22 +1,32 @@
-# g)	while (a < c) {
-#		a = a + 1
-#		b = b + 2; }
+# g)	a = 1
+#	b = 2
+#	for (i = 0; i < 5; i++) {
+#		a = b + 1
+#		b = b + 3
+#	}
+#
+
 .data
-	a_value:	.word 0
-	b_value:	.word 0
-	c_value:	.word 5
+	a_value:	.word 1
+	b_value:	.word 2
 	
 .text
 	lw	$s0, a_value
 	lw	$s1, b_value
-	lw	$s2, c_value
+	li	$t0, 0		# i = 0
 	
 	LOOP:
-		bge	$s0, $s2, END
-		addi	$s0, $s0, 1
-		addi	$s1, $s1, 2
+		bge	$t0, 5, END_F
+		add	$s0, $s1, 1
+		addi	$s1, $s1, 3
+		
+		addi	$t0, $t0, 1
 		
 		j 	LOOP
+
+	END_F:
+		sw	$s0, a_value
+		sw	$s1, b_value
 	
 END:
 	j	END
