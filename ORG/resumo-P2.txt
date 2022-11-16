@@ -1,0 +1,166 @@
+--------------
+Formato das instrucões:
+--------------
+R: operacões com reigstradores (i.e. aritméticas)
+	op(6) - rs(5) - rt(5) - rd(5) - shamt(5) - funct(6)
+		rs: 1o fonte
+		rt: 2o fonte
+		rd: destindo
+		shamt: bits a serem deslocados (shift amount)
+		funct: funcão específica da operacão
+
+I: constantes (ie transferencia com lw e sw)
+	op - rs(5) - rt(5) - imediato(16)
+		rs: end do registrador com o operando fonte
+		rt: reg fonte/destino
+
+	=> para load e store:
+		rs: end do resitrador com endereco-base na mem[oria
+		rt: end do registrador fonte (store) ou destino (load)
+		imediato: end relativo ao base
+
+=> memória de 2 ^30 palavras de 32 bits (ou 2³² bytes)
+
+--------------
+Registradores:
+--------------
+$s7-$s0
+$t7-$t0
+$zero
+
+$a0-$s3
+$v0-$v1
+
+$ra => endereco de retorno
+$sp => endereco de retorno
+
+
+
+
+--------------
+Aritmética:
+--------------
+add
+addi
+sub
+subi
+
+
+--------------
+Memória:
+--------------
+lw: 	carrega da memória para registrador
+sw:	armazena conteúdo de registrador na memória
+
+-> achar index i usando words (i.e. A[4]):
+	add	$t0, $s1, $s1
+	add	$t0, $t0, $t0	# 4i = 4 * 4 = 16
+	add	$t0, $t0, $s0	# A[4]
+
+
+--------------
+Deslocamento:
+--------------
+sll: desloca número para esquerda	-> multiplicar por 2^n
+srl: desloca número para direita	-> dividiir por 2^n
+	sll/srl rd, rt, shamt
+
+--------------
+Instrucões lógicas
+--------------
+and: desliga bits de dado (deixa 1 aonde quer que mantenha e 0 aonde quer forcar 0)
+	and rd, rs, rt
+	and rd, rs, imediato
+
+or: liga bits de dados (1 aonde quer forcar e 0 para manter o original)
+	or rd, rs, rt (ou imediato se ori)
+	
+xor: inverter bits de um número (aonde a máscara for 1)
+	xor rd, rs, rt (ou imediato se xori)
+	
+nor: nor rd, rs, rt
+
+not rdest, rsrc		=> pseudo-instrucao usando nor (nor $s1, $s2, $zero)
+
+--------------
+Instrucões de desvio:
+--------------
+- desvio condicional:
+	beq reg1, reg2, L
+	bne reg1, reg2, L
+- desvio incondicional:
+	j L
+
+
+- comparacão menor que (set on less than)
+	slt reg1, reg2, reg3	# se reg2<reg3, reg=1, senão, reg1=0
+	
+	---> if (a < b) goto Less
+		slt $t0, $s0, $s1	-> se $s0 < $s1, $t0 = 1 (condicão verdadeira)
+		bne $t0, $zero, Less	-> se $t0 != 0, quer dizer que é verdadeiro e deve ir para Less
+
+--------------	
+Suporte à Procedimentos:
+--------------
+1. dados em local acessível ao procedimento ($a)
+2. iniciar o procedimento
+3. recursos de memória ao procedimento
+4. executar
+5. resultado em $v
+6. retornar ao ponto de origem com $ra
+
+jal	procedimento
+jr	$ra
+
+$sp aponta para o topo da pilha (memória principal, reigão na parte alta da mem[oria e cresce para baixa)
+=> push (decrementa $sp)
+=> pop  (incrementa $sp)
+
+addi	$sp, $sp, -12	# decrementa $sp em 3 posicões para salvar 3 dados (4 se fosse salvar o $ra)
+sw	$.., 8($sp)
+sw	$.., 4($sp)
+...
+operacoes
+move	$v0, $..	# retorno
+lw	$.., 0($sp)	# último que foi colocado na pilha
+...
+addi	$sp, $sp, 12	# retorna para valor de antes
+jr	$ra
+
+=> $t não precisam ser salvos ao chamar procedimento
+   $s devem ser salvos quando modificados dentro do procedimento
+
+=> procedimentos não-folha: chamam outros procedimentos 
+	-> chamador coloca na pilha $a e $t usados
+	-> chamado  coloca na pilha $ra e $s usados por ele na 
+
+=> pilha usada para guardar variáveis locais ao procedimento (arrays locais)
+	-> regs e variáveis locais armazenados em segmento da pilha "quadro do procedimento / registro de ativacao"
+	-> endereco inicial do quadro é indicado por $fp (frame pointer)
+
+--------------
+Movimentacão entre registradores e memória:
+--------------
+lb $rt, imm($rs)
+	-> carrega byte inferior com sinal estendido do conteúdo da mem apontada em rs em $rt
+	-> enderecados 1 a 1 dentro de uma posicao de mem.
+	-> 4 bytes por endereco de memória (0x33221100)
+
+lbu $rt, imm($rs)
+	-> extensão de zeros do conteúdo (sempre positivo)
+
+sb $rt, $rs
+	-> armazena os 8 bits em rt nos 8 inferiores na memória no endereco
+-=-=-=-
+lh - load halfword => enderecados 2 a 2 (sinal extendido)
+lhu - load halfword unsigned => extensão de zeros
+
+sh: arm 16 bits de rt nos 16 inferiores da mem. no endereco
+-=-=-=-
+lw - load word
+
+lui - load upper immediate: carrega a constante imediata de 16 bits nos 16bits superiores de rt
+	lui $rt, imm	  - lui $t2, 0x55	=> $t2 = 55 hexadecimal
+
+sw - arm. valor de rt na pos. de memoria
+
