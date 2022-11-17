@@ -1,0 +1,228 @@
+Árvores de busca semibalanceadas
+-> p/ árvore binária balanceada:
+	máxima diferença de altura = 1
+	máxima dif. de número de nodos = 1
+
+-> árvore semibalanceada:
+	-> critério de balanceamento é relaxado/aproximado
+	-> mais liberdade na def. de algoritmos
+	-> mais eficiente (por conta do relaxamento)
+	-> critério de semi-balanceada (depende do modelo a ser usado)
+
+--------------------------------------
+Árvore AVL
+=> árvore binária com uma condição de balanço (não completamente balanceada)
+=> rebalanceamento com algo. eficiente
+
+=> critério de balanceamento:
+	-> diferença de altura entre sub-árvores não pode passar de 1 (para um nodo qualquer)
+	-> rotações de sub-árvore (simpels, dupla)
+	
+
+- Nodo de árvore AVL
+estrutura NodoAVL {
+	info: T;
+	esq : *NodoAVL;
+	dir : *NodoAVL;
+	alt : int; 		=> altura que o nodo está posicionado
+}
+	alt atualizado recursivamente quando um nodo for inserido ou deletado
+
+- retornar altura de uma subárvore: 
+	-> altura de árvore inexistente = -1 (consultar nodo folha)
+	
+int altura(subárvore *nodoAVL) {
+	se subárvore == NULL
+		return -1;		-> inexsitente
+	senão
+		return subárvore->alt;
+}
+
+
+=> rotações à um lado => lado que causou o desequlíbrio -> rotaciona em torno daquele nodo
+	-> rotação à esquerda = roda para direita
+		-> pega o nodo que causou, coloca como raíz da subárvore
+		   antigo nodo vai a direita
+		   valor inserido vai a esquerda
+	   rotação à direita  = roda para esquerda
+	 
+Algoritmo de inserção com rotação (recursivo):
+	-> parte do nodo inserido (mesmo de bin. de busca) e sube a árvore
+	-> atualiza a informação do balanceamento em cada nodo
+	-> se chegar à raíz sem encontrar nada de errado, terminou
+	   caso encontre nodo desbalanceado (|alt{esq} - alt{dir}| < 2), faz rotação no primeiro nodo desbalanceado encontrado (em relação à árvore mais funda)
+	   
+nodoAVL *simp_roda_esq(k2 *nodoAVL) {
+	nodoAVL* k1;
+	
+	k1 = k2->esq;
+	k2->esq = k1->dir
+	k1->dir = k2;
+	
+	// atualizando alturas
+	k2->alt = max(altura(k2->esq), altura(k2->dir)) + 1
+	k1->alt = max(altura(k1->esq), k2->alt) + 1
+	
+	return k1 (nova raíz da subárvore)
+}
+
+nodoAVL *simp_roda_dir(k2 *nodoAVL) {
+	nodoAVL* k1;
+	
+	k1 = k2->dir;
+	k2->dir = k1->esq;
+	k1->esq = k2;
+	
+	// atualizando alturas
+	k2->alt = max(altura(k2->dir), altura(k2->esq)) + 1
+	k1->alt = max(altura(k1->dir), k2->alt) + 1
+	
+	return k1 (nova raíz da subárvore)
+}
+
+=> rotação dupla:
+	4 subárvores A, B, C, D
+	-> quando descobre que precisa de rotação dupla, não rotaciona na aresta culpada pelo desbalanceamento, mas sim, desce um nível para o lado do desbalanceamento e rotaciona entre as duas
+	
+	-> desce um e roda no sentido contrário ao do desequlíbrio
+	-> roda no sentido do desequilíbrio no nodo de cima
+
+	-> como saber se precisa: guardar chave do nodo que inseriu
+		-> compara o valor da chave com os dois nodos na aresta que desequilibrou => vê se está entre o do que desequilibrou e o 1o nodo no caminho do desequlíbrio => se estiver entre, é dupla, senão, simples
+
+nodoAVL *dup_rad_esq(k3: *nodoAVL) {
+	// rotaciona entre k1 e k2
+	k3->esq = simp_roda_dir(k3->esq);
+	
+	// rotaciona entre k3 e k2
+	return (simp_roda_esq(k3));
+} 
+=> à direita é simétrica a esquerda
+
+-------------------------------------
+Inserção
+
+NodoAVL *insercaoAVL(T info, nodoAVL* arv, nodoAVL* pai) {
+	nodoAVL* arv_rodada;
+	
+	// folha
+	se (arv é nulo) {
+		// aloca novo nodo
+		arv = aloca novo nodoAVL
+		se arv é nulo retorne ERRO
+		arv->info = info
+		arv->alt = 0
+		arv->esq = NULL
+		arv->dir = NULL
+	} senão { // meio da árvore
+		// chamadas recursivas
+		se (info < arv->info) {
+			arv->esq = insercaoAVL(info, arv->esq, arv)
+			
+			se ((altura(arv->esq) - altura(arv->dir) > 1) {  // se desequilibrado
+				
+				// verifica o tipo de rotação
+				se (info < arv->esq->info) {
+					arv_rodada = simp_roda_esq(arv)
+				} senão {
+					arv_rodada = dup_roda_esqs(arv)
+				}	
+				// faz pai apontar para k2
+				se (pai->esq = arv) {
+					pai->esq = arv_rodada;
+				} senão {
+					pai->dir = arv_rodada
+				}
+				
+			} senão {  // se não rodou, atualiza a altura
+				arv->alt = max(altura(arv->esq), altura(arv->dir)) + 1
+			}
+			
+		} senão {  // espelha o algoritmo a cima
+			se (info > arv->info) {  // simetrico para árvore direita
+				rv->dir = insercaoAVL(info, arv->dir, arv)
+			
+				se ((altura(arv->dir) - altura(arv->dir) > 1) {  // se desequilibrado
+					
+					// verifica o tipo de rotação
+					se (info < arv->dir->info) {
+						arv_rodada = simp_roda_dir(arv)
+					} senão {
+						arv_rodada = dup_roda_dir(arv)
+					}	
+					// faz pai apontar para k2
+					se (pai->dir = arv) {
+						pai->dir = arv_rodada;
+					} senão {
+						pai->esq = arv_rodada
+					}
+					
+				} senão {  // se não rodou, atualiza a altura
+					arv->alt = max(altura(arv->esq), altura(arv->dir)) + 1
+				}
+			} senão retorne erro: chave já está na árvore
+		}
+	}
+	return arv;
+}
+------------------------
+Deleção
+=> busca chave a deletar
+=> deletar usando alg. recursivo de Deleção da Árvore binária de busca (DABB)
+	-> modifcada para após retorno da chamada recursiva atualizar e verificar alturas
+	-> "regra do zigue-zague" se necessário (!= regra do valor, importante na inserção)
+		=> olhar subárvore que desequilibrou e seus filhos
+		=> desequilíbrio a esquerda:
+			- sub-árvore esquerda é mais funda?
+				esquerda-esquerda: rot. simples a esquerda
+			- sub-árvore direita é mais funda?
+				esquerda-direita: dupla a esquerda
+		=> desequilíbrio a direita:
+			- sub-árvore direita é mais funda?
+				direita-direita: rot. simples a direita
+			- sub-árvore esquerda é mais funda?
+				direita-esquerda: dupla a direita
+				
+		-> não precisa saber o que foi deletado
+
+tNodo* delete(info: tInfo, arv:*nodo) {
+	tNodo* tmp, filho;
+	
+	se (arv = NULL) return arv
+	senão {
+		se (info < arv->info) {		// và a esquerda
+			arv->filhoEsquerda = delete(info, arv->filhoEsquerda)
+			arv = atualiza_zigue_zague(arv)
+			returna arv
+		} senão { 
+			se (info > arv->info) { // vá à direita
+				arv->filhoDireita = delete(info, arv->filhoDireita)
+				arv = atualiza_zigue_zague(arv)		-> olha se está desequilibrado e qual regra rodar
+				return arv
+				
+			} senão {  // encontrou elemento que quer deletar
+				se (arv->dir != NULL e arv->esq != NULL) {  // 2 filhos
+					tmp = minimo(arv->dir)
+					arv->info = tmp->info
+					arv->dir = delete(arv->info, arv->direita)
+					arv = atualiza_zigue_zague(arv)
+					return arv
+				} senão {  // 1 filho
+					tmp = arv;
+					
+					se (arv->dir != NULL) {  // filho a direita
+						filho = arv->dir
+						return filho
+					} senão se (arv->esq != NULL) { // filho a esquerda
+						filho = arv->esq
+						return filho
+					} senão {  // folha
+						libere arv
+						return NULL
+					}
+				}
+			}
+		}
+		
+	}
+}
