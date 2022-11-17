@@ -283,3 +283,224 @@ return 0;
 
 => mecanismos de ex. mútua: algo. de Peterson, spin-locks, mutexes
 => mec. de ex. mutua e sincronização: semáforos
+
+-----------------------------------
+
+Exclusão Mútua
+
+- Algoritmo de Peterson
+=> não precisa de suporte de hardware
+=> FLAG[]: vetor que indica quais threads desejam acesar região crítica
+	-> index = numero da thread
+=> TURN: decide qual thread tem acesso em caso de disputa
+=> inicialmente, todos valendo 0
+
+Thread 0 (T0):
+FLAG[0] = 1;
+TURN = 1;
+while (FLAG[1] == 1 && TURN == 1);  (não passa daqui e não faz nada)
+// região crítica
+FLAG[0] = 0;
+
+Thread 1 (T1)
+FLAG[1] = 1;
+TURN = 0;
+while (FLAG[0] == 1 && TURN == 0);  (não passa daqui e não faz nada)
+// região crítica
+FLAG[1] = 0;
+
+=> há espera ocupada (threads esperam permissão pra entrar na região em loop de teste -> uso desnecessário do processador)
+=> complexidade: fácil implementação para 2 threads, mais complexo para mais threads
+
+
+- Spin-locks
+=> sincronização baseada em busy waiting
+=> usa instrução específica de hardware
+	-> exchange (XCHG)
+=> execução atômica
+
+=> região crítica protegida por varíavel em memória ("LOCK")
+	-> inicialmente em =0
+	-> se LOCK = 0 -> região crítica livre
+	-> se LOCK = 1 -> região crítica ocupada
+
+=> entrando em região crítica:
+	MV REG, #1	-> REG = 1
+	XCHG REG, LOCK	-> troca os dois valores
+	CMP REG, #0	-> se for 1, LOCK era 1 e estava ocupada
+	JNE ENTRAR	-> se era 1 de fato (enquanto ocupada)
+	RET		-> se era 0 e houve troca, estava livre e pode entrar na região crítica
+=> saindo de região crítica:
+	MV LOCK, #0	-> indica estar livre
+	RET
+	
+=> problema: busy waiting (uso desnecessário do processador)
+
+- Mutex:
+=> proteção de região crítica
+=> evita busy waiting
+=> threads são bloqueadas enquanto esperam sua vez
+
+=> tipo abstrato de dados:
+	-> valor lógico (livre ou ocupado)
+	-> fila de threads bloqueadas que esperam sua vez para acessar a região crítica que aquele mutex protege
+=> operações sobre mutex m (atomicas; usam spin-locks para garantir):
+	-> lock(m): solicita acesso à região crítica
+	-> unlock(m): libera acesso a região crítica
+	
+lock(m):
+	se m está livre:
+		m = ocupado
+	senao:
+		bloqueia thread
+		insere a thread no fim da fila do mutex m	-> não usa CPU
+unlock(m):
+	se fila de m está vazia:
+		m = livre
+	senao:
+		libera thread do inicio da fila de m
+	
+=> apenas com spin-lock, a thread fica em looping consumindo processador esperando, tempo de uso da região crítica pode ser muito grande e desperdiçar CPU
+=> com mutex, fica em loop apenas enquanto espera para executar funções lock() e unlock()
+	-> se está ocupado, thread bloqueada e libera processador
+	-> tempo de execução de lock e unlock é pequeno
+	
+---> phtread_mutex_init(&mutex, attr)
+	-> mutex = variável do tipo pthread_mutex_t para inicializar
+	-> attr  = atributos específicos, padrão = NULL
+---> pthread_mutex_destroy(&mutex)
+
+pthread_mutex_t mutex;
+void* thread(void* arg) {
+	pthread_mutex_lock(&mutex);
+	// região critica
+	pthread_mutex_unlock(&mutex);
+	return 0;
+}
+int main() {
+	pthread_mutex_init(&mutex, NULL);
+	pthread_create(...)
+	pthread_join(...)
+	pthread_mutex_destroy(&mutex);
+	return 0;
+}
+
+-----------------------------------
+
+Semáforo
+=> tipo abstrato de dados:
+	-> contador inteiro sem sinal
+	-> fila de threads bloqueadas que esperam para acessar a região protegida pelo semáforo
+=> oeprações básicas em s:
+	P(s) / Down(s) = solicita acesso à região crítica
+	V(s) / Up(s)   = libera região crítica
+	-> ambas atômicas
+	-> implementações de semáforo usam spin-locks para garantir atomicidade nas funções
+
+=> P(s):	= sem_wait
+	se (valor de s > 0):
+		s--;
+	senao:
+		bloqueia thread e a insere no fim da fila do semaforo s (bloqueia thread)
+=> V(s):	= sem_post
+	se (fila de s vazia):
+		s++;
+	senao:
+		libera thread do inicio da fila de s
+
+=> tipos:
+	-> binário: assume somente valores 0 e 1
+		-> funciona como um mutex
+		-> usado para implementar exclusão mútua
+	-> contador: n >= 0:
+		-> n indica quantas threads podem "passar" pelo semáforo em um instante
+		-> sincronização entre threads
+
+---> sem_init(sem, pshared, value)
+	-> sem: do tipo sem_t
+	-> pshared: flag para indicar se semáforo deve ser compartilhado entre threads (=0) ou procesos (!= 0)
+	-> value: valor inicial do semáforo
+---> sem_destroy(sem)
+
+---> sem_wait(sem)	=> antes da região crítica
+---> sem_post		=> depois da seção crítica
+
+#include <semaphore.h>
+sem_t semaphore;
+
+void* thread(void* arg) {
+	sem_wait(&semaphore);
+	// seção crítica
+	sem_post(&semaphore);
+	pthread_exit(NULL);
+}
+
+int main(...) {
+	sem_init(&semaphore, 0, 1);	// semáforo binário
+	// cria threads + joins
+	sem_destroy(&semaphore);
+	return 0;
+}
+
+-----------------------------------
+
+Deadlocks
+
+=> mecanismos de controle de concorrência: garantem integridade dos recursos compartilhados
+=> bloqueadno acesso e deixando tarefas em espera, pode comprometer "liveness"/vivacidade da app
+	-> garante que execução das aplicações concorrentes será concluída em algum momento (mesmo esperando temporariamente por algum recurso)
+	-> comprometida se tarefas entrarem em deadlock
+
+- Recursos: algo que pode ser adquirido, usado e liberado por quem o manipula
+	-> "hardware, arquivo, variável compartilhada protegida por mutex, ..."
+=> acesso de modo:
+	-> compartilhado: várias tarefas podem acessar ao mesmo sem tempo sem falha
+		-> ler arquivo/dado, saída de áudoi, microfone
+	-> exclusivo: só pode ser acessado por uma tarefa por vez
+		-> escrever em arquivo/dado, scanner, impressora, ...
+		-> acesso deve ser controlado com mec. de exclusão mútua
+=> recurso preemtível: pode ser retirado do atual usuário/proprietário sem prejuízo (CPU) 
+   recurso não preemptível: não pode ser retirado sem falha (gravador de CD)
+	-> deadlocks nesses, normalmente
+=> eventos necessários para uso de recurso:
+	1. requisitar recurso: caso não disponível, solicitante espera
+	2. usar o recurso: após confirmar requisção, realiza a operação
+	3. liberar o recurso: libera para atender outros solicitantes
+
+=> "um conjunto de processos está em deadklock se cada um deles está bloqueado à espera de um evento que somente outro processo desse conjunto pode fazer acontecer"
+
+- Condições para ocorrência de deadlock
+1. exclusão mútua: determinado instante, recurso está em uma das duas situações: associado a uma tarefa única ou disponível
+2. posse e espera: tarefas que retem recursos concedidos anteriormente podem requisitar novos recursos
+3. não preempção: recursos concedidos a uma tarefa não podem ser tomados dela (somente liberados)
+4. espera circular: encadeamente circular de 2 ou mais tarefas
+
+
+- Estratégias para lidar com impasses
+=> ignorar por completo: "algoritmo do avestruz"
+=> detecção e recuperação de impasses: tenta detectar impasses em tempo de execução (ciclos no grafo gerado pelas tarefas e recursos)
+	-> após detecção, recupera sistema
+	-> pode fazer preempção temporária, i.e.
+=> prevenção de impasses: garantir pelo menos uma das quatro condições de deadlock não ocorra
+	-> impedir ex. mútua ou posse e espera ou não preempção ou espera circular
+	
+	=> ex. mútua:
+		impedir: que mais de uma tarefa possa requerer uso exclusivo de um recurso
+		ex.: spooler de impressão (único processo do SO que pode requisitar usar impressora, nunca requisita outro recurso)
+	=> posse e espera
+		impedir: tarefas que possuam posso de recursos esperar por mais recursos
+		ex.: exigir que todas tarefas requisitem todos recursos antes de inicializar a execução; não aloca nenhum recurso se um ou mais já estiverem sido alocados; aguarda até todos recursos necessários estarem livres
+	=> não preempção:
+		impedir: recurso possa tomar um recurso de outro processo
+		ex.: difícil de ser implementado se dar erro
+	=> espera circular:
+		exigir: tarefa tenha permissão para possuir somento um recurso de cada vez (se necessário outro, liberar o primeiro antes) ou ordem global para requisitar recursos (tarefas podem resquisitar mais de um, mas sempre consideradno uma ordem numérica global de recursos)
+		-> caso de ordem global: n recursos em ordem crescente; tarefas só podem requisitar um novo Rx se x for maior que o número de todos os demais recursos que a tarefa já possui ou esteja requisitando
+		
+- Outras questões com deadlocks
+=> impasses de comunicação: dois ou mais processos se comunicam em rede e as mensagens são perdidas
+=> livelocks: tarefas não ficam bloqueadas aguardando recurso, mas realizam operações sem progredir na execução
+	-> solução que permite preempção de recursos pode causar livelocks se mal implementada
+=> starvation (inanição): tarefa nunca consegue pegar recurso, pois outra faz antes
+	-> pode ser eliminada com FIFO
+		
