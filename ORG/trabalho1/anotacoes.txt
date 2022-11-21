@@ -1,0 +1,14 @@
+CONTROL: 
+	-> criar sinal para SEL_JMP e adicionar em CONTROL
+	-> adicionar demais saídas no CONTROL vindas da lógica de controle
+CONTROL_LOGIC:
+	-> implementar EN_TEC, EN_MON e SEL_JMP
+
+	
+MUX controlado por SEL_OP1:
+	00 = DOUT_BUS/DOUT_RAM 	(OK)
+	01 = vem do PC 		(OK)
+	10 = vem da ULA 	(OK)
+	11 = vem de DOUT_TEC 	(FAZER)
+
+https://www.youtube.com/watch?v=5Q2_2GYiBwM
