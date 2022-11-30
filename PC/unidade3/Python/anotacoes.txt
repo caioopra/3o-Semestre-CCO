@@ -39,3 +39,116 @@ thread2.start() # inicia thread2
 thread1.join()	# espera fim da thread1
 thread2.join()	# espera thread2
 
+-------------------------
+PROCESSOS
+
+=> um thread por vez acessa o processador
+=> para ter paralelismo, precisa de processos independentes
+	-> aloca mais recursos
+	-> interação por mecanismos de comunicação inter-processos
+
+=> módulo "multiprocessing"
+class Process
+	-> group
+	-> targe: função ou lambda executado pelo processo
+	-> name: default = "Process-N"
+	-> args: tupla
+	-> kwats: dict
+	-> daemon
+métodos:
+	start()
+	join()
+	run()
+	is_alive()
+	terminate(): encerra execução do processo
+atributos:
+	name
+	pid: process id
+
+-------------------------
+EXECUTORES
+concurrent.futures
+=> criação de executores de tarefas concorrentes
+=> classe abstrata Executor: gerenciar grupod e tarefas trabalhadoras (workers) que executam funções submetidas
+=> resultaods podem ser obtidas por objetos Future
+=> implementações da class Executor: ThreadPoolExecutor e ProcessPoolExecutor
+
+class Executor:
+métodos:
+	submit(fn,/, *args, **kwargs)
+		-> chama fn(*args, **kwargs) para executar
+		-> retorna Future que traz resultados da execução
+	shutdown(wait=True, *, cancel_futures=False)
+		-> encerra executor (padrão, espera executar tarefas e não cancela futures associaos ás tarefas executadas)
+
+Class ThreadPoolExecutor:
+	-> max_workers: máximo de threads a serem criadas
+		default = min(32, os.cpu_count()+4)
+	-> thread_name_prefix: prefixo que forma nome das threads do pool, seguido de número
+	-> initializer: função executada pelas threads criadas (pode informar dps)
+	-> initargs: tupla de argumentos passados para função (default=())
+
+-> método result() retorna resultado da execução de uma tarefa já concluĩda
+-------------------------
+CONTROLE DE CONCORRÊNCIA
+=> ainda podem ter condições de corrida entre as threads
+
+=> classe Lock (módulo threading) = mutex/lock
+=> métodos da classe Lock:
+	-> Lock(): factory que cria instancia de Lock
+	-> acquire(blocking=True, timeout=None): trava o Lock se estiver livre; senão, bloqueia até que seja liberado (exceto se blocking=False); tempo de bloqueio pode ser limitado
+	-> release(): libera o lock; se não estiver bloqueado, dá RuntimeError; não precisar se chamado pela mesma thread que fez acquire()
+	-> locked(): booleano se está ou não bloqueado
+=> pode usar with lock: ...
+	-> tranca ao entrar e destranca ao sair
+	
+=> classe RLock (threading): lock/mutex reentrante ("recursivo")
+=> thread que obtém o Lock pode fazer N chamadas para o acquire
+=> para liberar, chama release() N vezes
+
+-=-=-
+=> classe Condition: definir condições para executar threads
+=> sempre associada a um lock (pode associar várias condições a um mesmo lock)
+=> threads podem esperar que condição seja satisfeita para prosseguir
+=> threads que esperam condição devem ser notificadas quando for alterada
+=> evitar espera ocupada
+
+=> class Condition:
+	-> Condition(lock=None): cria condição e associa a um objeto Lock (cria novo se não informado)
+	-> acquire(): trava o lock associado
+	-> release(): destrava o lock
+	-> wait(timeout=None): bloqueia a thread até que condição seja satisfeita ou timeout esgote
+	-> notify(n=1): libera n threads que esperam pela condição para prosseguir
+	-> notify_all(): libera execução de todas threads que esperam
+
+-=-=-=-
+Semáforo
+=> threading.Semaphore
+	-> Semaphore(value=1): semáforo com contador especificado
+	-> acquire(blocking=True, timeout=None): decrementa contador se >0, senão, bloqueia (se blocking) até release() ou timeout 
+	-> release(n=1): incrementa com n
+
+BoundedSemaphore: contador não pode passar do valor inicial especificado na criação
+	-> mesmos métodos
+	-> caso tente incrementar acima do limite, da ValueError
+	
+------------------------
+MECANISMOS DE COMUNICAÇÃO
+=> processos precisam de mecanismos para comunicar (troca de dados mais e lenta)
+=> comunicação entre processos rodando na mesma máquina pode ser feita com:
+	canais de comunicação
+	filas de mensagens
+	memória compartilhada
+-> para máquinas diferentes precisa de mecanismo de comunicação remota:
+	sockets TCP ou UDP, Thrift, gRPC, middlewares de mensagens, web services, ...
+
+-=-=-=-
+Canais de Comunicação
+=> Pipe (módulo multiprocessing) = canal de comunicação
+	-> Pipe(duplex=True): cria canal de comunicação bidirecional (ou unidirecional se Duplex=False)
+	-> retorna dois objetos Connection (conn1 e conn2) que representam as extremidades do pipe
+		-> se for unidirecional, conn1 só pode receber dados e conn2 só enviar
+	-> dados enviados com Connection.send(Object)
+	-> Connection.recv() aguarda até que algum dado seja enviado e retorna o que for recebido
+
+

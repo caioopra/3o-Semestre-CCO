@@ -35,8 +35,6 @@ $ra => endereco de retorno
 $sp => endereco de retorno
 
 
-
-
 --------------
 Aritmética:
 --------------

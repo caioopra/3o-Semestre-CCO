@@ -9,3 +9,5 @@ with open("faltando.txt", "a") as file:
 				value = str(i+1)
 			file.write(f"{pais}-{value} ")
 		file.write("\n")
+
+
