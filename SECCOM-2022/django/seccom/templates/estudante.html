@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>HTML Forms</h2>
+
+<form action="/estudante/" method="post">
+  {% csrf_token %}
+
+  <label for="name">Name:</label><br>
+  <input type="text" id="name" name="name"><br>
+  <!-- name é o que vai ser pego no .py -->
+
+  <label for="birthdate">Birthdate:</label><br>
+  <input type="text" id="birthdate" name="birthdate"><br>
+
+  <label for="enteryear">Year entered:</label><br>
+  <input type="text" id="enteryear" name="enteryear"><br>
+
+  <input type="submit" value="Submit">
+</form> 
+
+<p>If you click the "Submit" button, the form-data will be sent to a page called "/action_page.php".</p>
+
+</body>
+</html>
+

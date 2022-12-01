@@ -1,0 +1,17 @@
+{% extends "default.html" %}
+{% block content %}
+    <h1>Olá mundo!</h1>
+    <button type="button" id="teste">Clique aqui!</button>
+
+    <h1 >{{ nome }}</h1>
+    <br><br>
+    {% for amigo in amigos %}
+        <h2>{{ amigo }}</h2>
+    {% endfor %}
+
+    <select name="select">
+        {% for key, value in animals.items %}
+            <h2><option value="{{ key }}">{{ value }}</h2></option>
+        {% endfor %}
+    </select>
+{% endblock %}

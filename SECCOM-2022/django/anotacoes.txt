@@ -1,0 +1,54 @@
+=> criar novo projeto: django-admin startproject nomeDoProjeto
+=> rodar no localhost: python manage.py runserver
+
+=> respostas de requisição HTTP (de erros ou outros status)
+	-> métodos HTTP: GET (pegar dados do servidor), POST (enviar dados p servidor), DELETE, PUT, ...
+
+=> querystring: passar variáveis pela url
+	.../?variavel=valor
+	-> & para separar e mandar mais de uma variavel
+
+=> regex?
+
+
+---------------------
+Primeira Tela
+=> pode colocar outro framework web junto do django para deixar front-end mais bonito
+=> pasta template: todos HTML
+	-> fora do módulo, precisa informar para o django
+
+
+
+=> template e definição de blocos para não repetição de código
+=> block pode ter o nome que quiser
+
+
+=> metabase?
+
+
+-------------------
+Persistência de Dados
+
+=> abstrái usar SQL
+=> salva em db.sqlite3
+=> evitar deixar a aplicação e banco de dados na mesma aplicação (separar o banco de dados em outro local, pode ter mais acesso de outras aplicações,...)
+	-> recomendação: usar MySQL
+
+=> migration = alteração no banco de dados
+	=> mantém histórico de todas alterações feitas
+
+manage.py makemigrations nome
+	  migrate
+
+-> postman para testar post e requisições (navegador só faz GET)
+
+-> CSRF: precisa garantir que é o site que faz requisição de POST para não acessar outros sites e cookies
+
+-------
+Pesquisar
+=> midleware (caminho intermediário, verificando requisições (se tem permissão, ...))
+	-> autenticação
+	-> tem pronto no Django
+=> sistema de login e cadastro
+
+https://github.com/mamodo123/djangoseccom

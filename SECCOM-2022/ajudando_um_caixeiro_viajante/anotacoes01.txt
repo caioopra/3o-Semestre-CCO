@@ -1,0 +1,57 @@
+=> faz ciclo: inicia e volta ao ponto de origem
+ 
+ - "Dada um conjunto de cidades (1, 2, ..., n), det. a melhor sequencia para visitar as cidades com objetivo de minimizar o tempo (ou custo) total da viagem"
+
+=> TSP-art: usa as coordenadas de cada cidade
+=> "caixeiro viajante assimétrico" (A-B != B-A)
+=> "de decisão" (visto em Teoria da Computação, com limite/ideal para o custo de um ciclo, a ser ou não atingido)
+
+
+Soluções
+=> enumeração explícita: enummerar explicitamente todas permutações das n cidades (vê e compara o custo de cada uma)
+	-> começa do vértice 0
+	-> a cada nível, completa um passo da rota
+		-> número de níveis = número de cidades
+=> não há algoritmo de tempo polinomial, somente exponenciais (O(n!), O(n^2 2^n), ...)
+
+=> NP-difícil: não se conhece nenhum algoritmo eficiente (polinomial) -> relação com outros problemas (teoria da computação)
+	-> número de soluções: número de soluções viáveis (permutações) é n!, então, estratégias de enumeração explícita são capazes de resolver apenas instancias de tamanho reduzido
+	
+
+-------------
+Algoritmo de Bellman-Held-Karp (ou Held-Karp) 
+-> usa programação dinâmica: modelar o problema pensando na função de otimalidade dele
+	-> OPT(n,...) = valor   (função ótima)
+
+OPT(S, v)
+	-> S (conjunto de todas as cidades): {1, 2, ..., n}
+	-> v (termina nessa cidade)
+-> fixa que inicia no vértice 1 (por ser um ciclo, não muda onde começa, passa por todos em S)
+	-> no meio entre 1 e v, ficam os demais vértices                                                       
+	OPT( 1  -------- S ---------- v)
+			=
+ 	custo ótimo de um caminho que começa em 1 e termina em v, passando em todas as cidades em S (vértices)
+ 	-> considera que 1 e v não estão em S
+ 
+ => custo caso S for vazio = w({1, v}) = reta de 1 para v (distância = w = custo)
+ => caso constrário, tem mais elementos pra procurar
+ 
+ S = {2, 3}, v=4
+ OPT(S, 4) = menor entre
+ 	OPT(S-{3}, 3) + w(3, 4)		-> custo do caminho 1 - 2 - 3 - 4
+ 		ou
+ 	OPT(S-{2}, 2) + w(2, 4)		-> custo do caminho 1 - 3 - 2 - 4
+ => o que falta para resolver o problema: fechar o ciclo
+ 
+ 
+
+exemplo:
+	cidades = {1, 2, 3, 4, 5}
+	-> para 1)
+		OPT({2, 3, 4}, 5)    -> 1 até 5, passando pelos demais
+		OPT({2, 3, 5}, 4)
+		OPT({2, 4, 4}, 3)
+		OPT({3, 4, 5}, 2)
+		=> faz isso e vai calculando o custo para volta (salva em memória para otimização, bem como pode aconteceria acontecer de precisar calcular mais de uma vez o mesmo caso)
+		
+		
