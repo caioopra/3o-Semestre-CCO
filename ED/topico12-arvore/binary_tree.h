@@ -115,7 +115,7 @@ class BinaryTree {
                 if (left != nullptr) {
                     left = left->remove(data_);
                     return this;
-                } else {
+                } else {    
                     return nullptr;
                 }
             } else if (data_ > data) {

@@ -14,10 +14,10 @@
 
 
 	PAISES:		.asciiz "QAT ECU SEN NED ENG IRN USA WAL ARG KSA MEX POL FRA AUS DEN TUN ESP CRC GET JPN BEL CAN MAR CRO BRA SRB SUI CMR POR GHA URU KOR"
-	
+
 	.align 2
 	INPUT_BUFFER:  	.space 8
-	
+
 	.align 2
 	TEMPORARY_BUFFER: .space 3
 
@@ -25,10 +25,10 @@
 main:
 	la	$a0, INITIAL_P
 	jal	PRINT
-	
-	
-	
-	
+
+
+
+
 	# EXEMPLO DE ENTRADA DO TECLADO E PRINT
 	jal	READ_STRING
 	move	$t0, $v0
@@ -96,7 +96,7 @@ READ_INT:
 	# $v0 já contém valor do inteiro lido
 
 	jr	$ra
-# FIM DE READ_INT	
+# FIM DE READ_INT
 # =================================================
 
 
@@ -109,21 +109,22 @@ PRINT:
 	li	$v0, 4
 	syscall
 	jr	$ra
-# FIM DE PRINT	
-# =================================================	
+# FIM DE PRINT
+# =================================================
 
 
-# =================================================	
+# =================================================
 #			FIND_COUNTRY
 # Procedimento que identifica o país informado da string de input
 #	- $v0 = 1, caso seja encontrado um país válido
 #	        0, caso não encontre um país
 #	- $v1 (caso $v0=1) = index para encontrar o país na lista pronta em .data
-# =================================================	
+# =================================================
 FIND_COUNTRY:
 	# percorre os 3 primeiros caractéres da string para formar a sigla
 	li	$t0, 0
-	
+
 	SPLIT_LOOP:
-			
-	
+		
+
+

@@ -114,7 +114,7 @@ NodoAVL *insercaoAVL(T info, nodoAVL* arv, nodoAVL* pai) {
 		arv->alt = 0
 		arv->esq = NULL
 		arv->dir = NULL
-	} senão { // meio da árvore
+	} senão { // meio da árvore   
 		// chamadas recursivas
 		se (info < arv->info) {
 			arv->esq = insercaoAVL(info, arv->esq, arv)
@@ -140,7 +140,7 @@ NodoAVL *insercaoAVL(T info, nodoAVL* arv, nodoAVL* pai) {
 			
 		} senão {  // espelha o algoritmo a cima
 			se (info > arv->info) {  // simetrico para árvore direita
-				rv->dir = insercaoAVL(info, arv->dir, arv)
+				rv->dir = insercaoAVL(info, arv->esq, arv)
 			
 				se ((altura(arv->dir) - altura(arv->dir) > 1) {  // se desequilibrado
 					
