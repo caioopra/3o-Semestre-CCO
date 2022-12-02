@@ -2,8 +2,8 @@
 #ifndef STRUCTURES_AVL_TREE_H
 #define STRUCTURES_AVL_TREE_H
 
-#include "array_list.h"
 #include <algorithm>
+#include "array_list.h"
 
 namespace structures {
 
@@ -14,7 +14,7 @@ class AVLTree {
 
     void insert(const T& data);
 
-    void remove(const T& data);
+    bool remove(const T& data);
 
     bool contains(const T& data) const;
 
@@ -41,126 +41,104 @@ class AVLTree {
         Node* left;
         Node* right;
 
-        /* ALGORITMO RECURSIVO NÃO USADO
-        
-        void insert(const T& data_, Node* arv, Node* pai) {
-            Node* arv_rodada;
-
-            // se for uma folha
-            if (arv == NULL) {
-                // aloca novo nodo
-                Node* arv = new Node(data);
-                if (arv == NULL)
-                    throw std::out_of_range("Erro ao criar o nodo");
-
-                arv->data = data_;
-                arv->right = NULL;
-                arv->left = NULL;
-            } else {
-                if (data_ < arv->data) {
-                    arv->left = insert(data_, arv->left, arv);
-
-                    if (height(arv->left) - height(arv->right) > 1) {  // desequilibrou
-                        // verifica o tipo de rotação que precisa fazer
-                        if (data_ < arv->left->data) {
-                            arv_rodada = simpleLeft(arv);
-                        } else {
-                            arv_rodada = simpleRight(arv);
-                        }
-
-                        // pai aponta para k2
-                        if (pai->left == arv) {
-                            pai->left = arv_rodada;
-                        } else {
-                            pai->right = arv_rodada;
-                        }
-                    } else {
-                        updateHeight(arv);
-                    }
-                } else {  // esoelha algoritmo a cima
-                    if (data_ > arv->data_) {
-                        arv->right = insert(dat_, arv->right, arv);
-
-                        if (height(arv->right) - height(arv->left) > 1) {
-                            if (data_ < arv->right->data) {
-                                arv_rodada = simpleLeft(arv);
-                            } else {
-                                arv_rodada = simpleRight(arv);
-                            }
-
-                            // pai apontando para k2
-                            if (pai->right == arv) {
-                                pai->right = arv_rodada;
-                            } else {
-                                pai->left = arv_rodada;
-                            }
-                        } else {
-                            updateHeight(arv);
-                        }
-                    } else {
-                        throw std::out_of_range("Erro: chave já está na árvore!");
-                    }
-                }
+        Node* insert(Node* node, const T &data_) {
+            if (node == nullptr) {
+                Node* node = new Node(data_);
+                return node;
             }
-            return arv;
+            if (data_ < node->data) {
+                // inserindo na esquerda
+                node->left = insert(node->left, data_);
+            } else if (data_ > node->data) {
+                // inserindo na direita
+                node->right = insert(node->right, data_);
+            } else {
+                throw std::out_of_range("Não foi possível inserir o nó.");
+            }
+
+            updateHeight(node);
+
+            // valor para o balanceamento
+            int balance = abs(node->left->height_ - node->right->height_);
+
+            // rotações
+            // simples a esquerda
+            if (balance > 1 && data_ < node->left->data) {
+                return simpleLeft(node);
+            }
+
+            // simples a direita
+            if (balance < -1 && data_ > node->right->data) {
+                return simpleRight(node);
+            }
+
+            // dupla a esquerda
+            if (balance > 1 && data_ > node->left->data) {
+                doubleLeft(node);
+            }
+
+            // dupla a direita
+            if (balance < -1 && data_ < node->right->data) {
+                doubleRight(node);
+            }
+
+            return node;
         }
-        */
 
-        void insert(Node* raiz, T& data_) {
-            
-        }
-
-        bool remove(const T& data_) {
-            Node* node = this;
-            Node* temporary;
-
-            if (data_ < node->data) {  // vai para esquerda
+        Node* remove(const T& data_) {
+            Node *node = this;
+            if (data_ < node->data) {  // esquerda
                 node->left = node->left->remove(data_);
-            } else if (data_ > node->data) {  // vai para direita
+            } else if (data > node->data) {  // direita
                 node->right = node->right->remove(data_);
-            } else {  // esse é o nodo que quer deletar
-                if (node->right == nullptr && node->left == nullptr) {
-                    // nao tem filho
-                    temporary = node;
-                    node = NULL;
-                } else if ((node->left != nullptr) && (node->right == nullptr)) {
-                    // aponta para o filho a esquerda
-                    temporary = node->left;
-                    *node = *temporary;  // copia o dado
-                } else if ((node->left == nullptr) && (node->right != nullptr)) {
-                    // aponta para o filho a direita
-                    temporary = node->right;
-                    *node = *temporary;  // copiando o dado
+            } else {  // achou o nodo que quer deletar
+                if ((node->left == NULL) || (node->right == NULL)) {
+                    // tem 1 filho e ve qual filho existe
+                    Node *tmp = node->left ?
+                                node->left : node->right;
+
+                    // sem filho
+                    if (tmp == NULL) {
+                        tmp = node;
+                        node = NULL;
+                    } else {
+                        *node = *tmp;  // Copia os dados.
+                        delete tmp;
+                    }
                 } else {
-                    // se tiver dois filhos
-                    // recebe o menor da direita
-                    temporary = minimum(node->right);
-                    // copia o valor para o nodo atual (sobrescrever)
+                    // dois filhos
+                    Node *tmp = minimum(node->right);
+                    // copia o valor para o node atual
                     node->data = tmp->data;
                     // deleta o próximo
-                    node->right = node->right->remove(temporary->data);
+                    node->right = node->right->remove(tmp->data);
                 }
-            }
-            if (node == nullptr) {
-                return node;
             }
 
             // atualizando a altura
             updateHeight(node);
 
             // verificando se precisa de rotação
-            int balanceamento = height(node->left) - height(node->right);
+            int balanceamento = abs(height(node->left) - height(node->right));
 
             if (balanceamento > 1) {
-                if ((height(node->left->left) - height(node->left->right)) >= 0) {
+                if (
+                    (height(node->left->left) -
+                    height(node->left->right)) >= 0) {
                     return simpleLeft(node);
-                } else if ((height(node->left->left) - height(node->left->right)) < 0) {
+                } else if (
+                    (height(node->left->left) -
+                    height(node->left->right)) < 0) {
                     return doubleLeft(node);
                 }
             } else if (balanceamento < -1) {
-                if ((height(node->right->left) - height(node->right->right)) <= 0) {
+                if (
+                    (height(node->right->left) -
+                    height(node->right->right)) <= 0) {
                     return simpleRight(node);
-                } else if ((height(node->right->left) - height(node->right->right)) > 0) {
+                } else if (
+                    (height(node->right->left) -
+                    height(node->right->right)) > 0) {
                     return doubleRight(node);
                 }
             }
@@ -182,7 +160,8 @@ class AVLTree {
         }
 
         void updateHeight(Node* node) {
-            node->height_ = std::max(height(node->left), height(node->right)) + 1;
+            node->height_ = std::max(height(node->left),
+                                     height(node->right)) + 1;
         }
 
         Node* simpleLeft(Node* k2) {
@@ -266,12 +245,12 @@ class AVLTree {
             if (node->left != nullptr) {
                 return node->minimum(node->left);
             }
-            return now;
+            return current;
         }
     };
 
     Node* root{nullptr};
-    std::size_t size_;
+    std::size_t size_{0u};
 };
 
 }  // namespace structures
@@ -284,14 +263,72 @@ structures::AVLTree<T>::~AVLTree() {
 
 template <typename T>
 void structures::AVLTree<T>::insert(const T& data) {
-    Node* node = root;
-
-    
+    std::cout << "Inserindo" << data << std::endl;
     root = root->insert(root, data);
     size_++;
 }
 
 template <typename T>
 int structures::AVLTree<T>::height() const {
-    return root->height();
+    return root->height(root);
+}
+
+template<typename T>
+bool structures::AVLTree<T>::remove(const T& data) {
+    if (empty()) {
+        throw std::out_of_range("Arvore vazia");
+    }
+
+    bool rem = root->remove(data);
+    size_--;
+    return rem;
+}
+
+template <typename T>
+bool structures::AVLTree<T>::contains(const T& data) const {
+    if (root != nullptr) {
+        return root->contains(data);
+    } else {
+        return false;
+    }
+}
+
+template <typename T>
+bool structures::AVLTree<T>::empty() const {
+    return size() == 0 ? true : false;
+}
+
+template <typename T>
+std::size_t structures::AVLTree<T>::size() const {
+    return size_;
+}
+
+template <typename T>
+structures::ArrayList<T> structures::AVLTree<T>::pre_order() const {
+    structures::ArrayList<T> list;
+    if (root != nullptr) {
+        root->pre_order(list);
+    }
+
+    return list;
+}
+
+template <typename T>
+structures::ArrayList<T> structures::AVLTree<T>::in_order() const {
+    structures::ArrayList<T> list;
+    if (root != nullptr) {
+        root->in_order(list);
+    }
+
+    return list;
+}
+
+template <typename T>
+structures::ArrayList<T> structures::AVLTree<T>::post_order() const {
+    structures::ArrayList<T> list;
+    if (root != nullptr) {
+        root->post_order(list);
+    }
+
+    return list;
 }

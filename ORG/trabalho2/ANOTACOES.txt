@@ -1,0 +1,17 @@
+1) encontrar pais XYZ
+2) percorrer vetor pra encontrar a linha correspondente na matriz
+	2.a) contador_linha = 0 ;	-> estado inicial
+		 se não for aquela sigla que quer, vai para o próximo (contador_linha++)
+			index no array  = contador
+			linha da matriz = contador_linha
+		 se for aquela posição, para de contar
+3) quantidade de "\n" que deve encontrar para achar a linha da sigla que quer = contador_linha-1
+
+
+
+
+
+aaaaa
+bbbbb
+ccccc
+ddddd

@@ -19,7 +19,7 @@
 	INPUT_BUFFER:  	.space 8
 
 	.align 2
-	TEMPORARY_BUFFER: .space 3
+	TEMPORARY_BUFFER: .space 3	# usado para identificar sigla de um pais
 
 .text
 main:
@@ -36,9 +36,7 @@ main:
 	move	$a0, $t0
 	jal	PRINT
 
-	
-	
-	
+	jal	FIND_COUNTRY_INDEX
 	
 
 
@@ -114,17 +112,59 @@ PRINT:
 
 
 # =================================================
-#			FIND_COUNTRY
-# Procedimento que identifica o país informado da string de input
-#	- $v0 = 1, caso seja encontrado um país válido
-#	        0, caso não encontre um país
-#	- $v1 (caso $v0=1) = index para encontrar o país na lista pronta em .data
+#			FIND_COUNTRY_INDEX
+# Procedimento que identifica o pais informado da string de input
+#	(nao precisa de argumentos, consegue acessar diretamente pelo endereco)
+#	- $v0 = 1, caso seja encontrado um pais valido
+#	        0, caso nao encontre um pais
+#	- $v1 (caso $v0=1) = index para encontrar o pai na lista pronta em .data
 # =================================================
-FIND_COUNTRY:
-	# percorre os 3 primeiros caractéres da string para formar a sigla
-	li	$t0, 0
+FIND_COUNTRY_INDEX:	
+	# escreve em TEMPORARY_BUFFER as 3 letras que formam a sigla do pais
+	GET_INITIALS:
+		la	$t0, INPUT_BUFFER		# $t0 = endereco da string de input
+		la	$t1, TEMPORARY_BUFFER
+		
+		lb	$t2, ($t0)			# $t1 = primeira letra
+		sb	$t2, ($t1)			# escreve primeira letra no buffer
 
-	SPLIT_LOOP:
+		lb	$t2, 1($t0)			# segunda letra
+		sb	$t2, 1($t1)			# escreve letra no segundo byte do buffer
+		
+		lb	$t2, 2($t0)
+		sb	$t2, 2($t1)
+		li	$t2, 0x20
+		sb	$t2, 3($t1)
+		
+		# DEBUG: printa a sigla lida
+		#move	$a0, $t1
+		#li	$v0, 4
+		#syscall
+	
+	# procura a sigla encontrada no vetor com todas as siglas
+	GET_INDEX:
+		li	$t0, 0				# contador da posicao da sigla no vetor
+		lw	$t1, ($t1)			# sigla lida
+		la	$t2, PAISES			# endereco base para o vetor dos paises
+		lw	$t3, ($t2)			# primeira sigla
+		# volta para o looping sempre que a sigla nao corresponder a que foi lida
+		SEARCH_LOOP:
+			beq	$t1, $t3, FOUND		# se a sigla do input for igual a do vetor, encontrou
+			# senao
+			addi	$t0, $t0, 1
+			addi	$t2, $t2, 4		# endereco da proxima sigla do vetor (prox. end. de memoria)
+			lw	$t3, ($t2)		# proxima sigla
+			j	SEARCH_LOOP
+
+		FOUND:
+			move	$a0, $t2
+			li	$v0, 4
+			syscall			
+
+
+	
+
+		
 		
 
 
