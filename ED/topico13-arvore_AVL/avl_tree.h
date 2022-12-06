@@ -34,6 +34,9 @@ class AVLTree {
     struct Node {
         explicit Node(const T& data_) {
             data = data_;
+            left = nullptr;
+            right = nullptr;
+            height_ = 0;
         }
 
         T data;
@@ -59,7 +62,19 @@ class AVLTree {
             updateHeight(node);
 
             // valor para o balanceamento
-            int balance = abs(node->left->height_ - node->right->height_);
+            int hl = 0;
+            int hr = 0;
+            if (node->left == nullptr) {
+                hl = -1;
+            } else {
+                hl = height(node->left);
+            }
+            if (node->right == nullptr) {
+                hr = -1;
+            } else {
+                hr = height(node->right);
+            }
+            int balance = abs(hl - hr);
 
             // rotações
             // simples a esquerda
@@ -119,7 +134,19 @@ class AVLTree {
             updateHeight(node);
 
             // verificando se precisa de rotação
-            int balanceamento = abs(height(node->left) - height(node->right));
+            int hl = 0;
+            int hr = 0;
+            if (node->left == nullptr) {
+                hl = -1;
+            } else {
+                hl = height(node->left);
+            }
+            if (node->right == nullptr) {
+                hr = -1;
+            } else {
+                hr = height(node->right);
+            }
+            int balanceamento = abs(hl - hr);
 
             if (balanceamento > 1) {
                 if (
@@ -263,8 +290,11 @@ structures::AVLTree<T>::~AVLTree() {
 
 template <typename T>
 void structures::AVLTree<T>::insert(const T& data) {
-    std::cout << "Inserindo" << data << std::endl;
-    root = root->insert(root, data);
+    if (root == nullptr) {
+        root = new Node(data);
+    } else {
+        root = root->insert(root, data);
+    }
     size_++;
 }
 

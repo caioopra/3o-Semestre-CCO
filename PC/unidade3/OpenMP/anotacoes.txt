@@ -1,0 +1,191 @@
+Vantagens:
+	-> bom desempenho e escalabilidade
+	-> portabilidade
+	-> mais simples (programação)
+	-> permite paralelizar aplicações de forma incremental
+
+=> modelo Fork and Join:
+	-> execução inicia com uma única thread (master)
+	-> fork: worker threads criadas em região paralela
+	-> join: barreia implícita ao final de uma região paralela
+		 execução continua somente com a master
+
+#include <omp.h>
+gcc -o prog prog.c -fopenmp
+
+
+----------------
+
+Rotinas
+
+- omp_set_num_threads(int t): num total de threads a serem usadas nas regiões paralelas
+	-> ou com variável de ambiente OMP_NUM_THREADS
+- omp_get_num_threads: num de threads dentro de uma região paralela
+- omp_get_threead_num: id único da thread dentro de uma região paralela
+- omp_get_num_procs: retorna número de núcleos de processamento
+
+----------------
+
+Diretivas OpenMP
+=> paralelismo pelas diretivas de compilação: #pragma omp diretevia {cláusulas}
+
+
+- Diretiva parallel: #pragma omp parallel
+	-> região paralela: identifica bloco de código que vai executar em várias threads
+	-> se necessário mais de uma linha:
+		#pragma omp parallel
+		{
+			código
+			cõdigo
+		}
+	-> cláusulas:
+		- private(list): cria cópia local das variáveis em cada thread
+				 		 cópias locais não inicializadas
+				 		 Argumentos: lista de variáveis
+			
+			int a = -1;
+			#pragma omp parallel private(a)
+			printf("Valor: %d\n", a);
+			printf("Valor certo: %d", a)
+				=> Valor: 37613		-> indefinido (lixo)
+				   Valor: 0		-> indefinido (lixo da thread2)
+				   Valor certo: -1	-> fora do pragma, pega o valor
+		
+		- firstprivate(list): cópia local das variáveis em cada thread
+				      	      Cópias locais inicializadas com valor que possuíam antes da região paralela
+				      	      Argumentos: lista de variáveis
+			int a = -1;
+			#pragma omp parallel firstprivate(a)
+			{
+				printf("dentro = %d\n", a);
+				a = 123;
+			}
+			printf("Fora = %d", a);
+			
+				=> dentro = -1
+				   dentro = -1 (para duas threads)
+				   fora = -1
+		- shared (list): variáveis compartilhadas entre as threads
+						 todas threads usam a mesma instancia das variáveis
+						 
+			int a = -1;
+			#pragma omp parallel shared(a)
+			{
+				printf("dentro antes = %d\n", a);
+				a = omp_get_thread_num();
+				printf("dentro depois = %d\n", a);
+			}
+			printf("Fora = %d\n", a);
+				
+				=> dentro antes = -1
+				   dentro antes = -1
+				   dentro depois = 0
+				   dentro depois = 1
+				   fora = 1
+				=> dentro antres = -1
+				   dentro depois = 1
+				   dentro antes = 0
+				   dentro depois = 0
+				   fora = 0
+				   
+		-> fora alguns casos: var. declaradas fora de reg. paralela são shared (se não especificado nada como cláusula) e as dentro da região são private
+		
+		- reduction: cria cópia local das variáveis em cada thread
+					 cópias inicializadas com valor 0 ou 1 (operador de redução usado especifica)
+					 no fim da região paralela, faz operação de redução em todas as variáveis locais
+					 val. armazenads nas variaveis locais são copiadaso para as var. externas a região paralela
+					 Argumentos: operador de redução (id) e lista de variáveis
+			
+			int a = 1;
+			#pragma omp parallel reduction(+:a)
+			a = a + 2;
+			print("a = %d", a)
+			
+				=> 4 threads:
+					a1 = 0; a1 += 2
+					a2 = 0; a2 += 2
+					...
+					fim das threads worker
+					a = a + a1 + a2 + a3 + a4 = 1 + 2 + 2 + 2 + 2
+				=> a = 9
+			
+- Diretiva for: dentro de região paralela ou combinando parallel for
+	=> paralelizar laços automativamente
+	=> iterações do laço distribuídas e executadas em paralelo pelas threads da região paralela
+
+		#pragma omp parallel
+		#pragma omp for
+		for (int i = 0; i < 20; i++)
+			c[i] = a[i] + b[i];
+	
+	=> cláusulas
+		- schedule: define como iterações do laço são divididas entre as threads (escalonamento)
+				    iterações individuais podem ser agrupadsa em blocos (chunks)
+					Argumentos: forma de escalonamento (kind) e tamanho dos chunks
+						-> kind: static, dynamic, guided, auto
+							-> static e dynamic com chunk de tamanho fixo
+							-> guided possui chunk de tamanho variável
+						-> chunk_size: qtd de iterações em cada bloco
+			soma = 0;
+			#pragma omp parallel shared(a, b)    // arrays a e b compartilhados
+			#pragma omp for schedule(static) reduction(+:soma)
+			for (int i = 0; i < N; i++)
+				soma += a[i] * b[i];
+			
+					-> schedule(static): tamanho automatico de acordo com tamanho e threads
+										 separa igualmente para todas as threads
+					-> shcedule(static, size): tamanho size para as threads
+											   "em ordem" nas threads, esperando todas terminarem seu pedaço para continuar
+					-> schedule(dynamic, size): tamanho dado, mas dá novos pedaços conforme threads terminam de usar os dados passados em cada chunk
+					-> schedule(guided, size): mesma estratégia de dynamic, mas com chunk tendendo a size (pode não ser exato no valor, mas conforme executa, se aproxima)
+					
+- Diretiva sections: dividir trechos do código (sections) entre threads (cada uma executada por uma thread)
+	=> sincronização implícita no final (exceto cmo nowait)
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		a();
+		#pragma omp section
+		b();
+	}
+
+- Diretivas de sincronização
+	- single: determina que código em região seja executado por somete uma thread
+		-> demais threads esperam execução (exceto nowait)
+		#pragma omp parallel
+		{
+			printf("Thread :%d", omp_get_thread_num());
+			#pragma omp single
+			printf("Total de threads: %d", omp_get_num_threads());
+		}
+			=> Thread 2
+			   Thread 1
+			   Total de threads: 4
+			   Thread 0
+			   Thread 3
+
+	- critical: como mecanismo de exclusão mútua
+		-> todas threads executam, mas uma de por vez
+		
+		x = 0;
+		#pragma omp parallel shared(x)
+		{
+			#pragma omp critical
+			x++;
+		}
+		printf("X = %d", x);
+			=> x = 4
+		
+	- barrier: sincroniza threads em uma barreira (faz esperar)
+		#pragma omp parallel
+		{
+			a();
+			#pragma omp barrier
+			b();
+		}
+			=> começca a, espera terminar para começar b
+			
+		
+			
+						
+				      

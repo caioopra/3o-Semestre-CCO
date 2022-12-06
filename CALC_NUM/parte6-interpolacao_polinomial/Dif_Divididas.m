@@ -2,19 +2,19 @@ function Dif_Divididas
 clear
 clc
 
-x = [0 1 2 3];
-y = [-3 -2 4 0];
+x = [0 2 3 5];
+y = [1 7 13 31];
 n = length(x);
 
-ponto_interpolar = 2.5;
+ponto_interpolar = 4;
 interpolado = Newton(x, y, n, ponto_interpolar);
 printf("Interpolando o ponto 2.5: %d\n", interpolado)
 
 # interpolando os pontos em x
-for i = 1 : n
-    interpolado = Newton(x, y, n, x(i));
-    printf("Interpolando o ponto %d: %d\n", x(i), interpolado)
-endfor
+% for i = 1 : n
+%     interpolado = Newton(x, y, n, x(i));
+%     printf("Interpolando o ponto %d: %d\n", x(i), interpolado)
+% endfor
 
 endfunction
 
@@ -40,4 +40,5 @@ for i = 1 : n
     P += mult * a(i, i);
 endfor
 P;
+a
 endfunction
