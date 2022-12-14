@@ -1,17 +1,12 @@
-1) encontrar pais XYZ
-2) percorrer vetor pra encontrar a linha correspondente na matriz
-	2.a) contador_linha = 0 ;	-> estado inicial
-		 se não for aquela sigla que quer, vai para o próximo (contador_linha++)
-			index no array  = contador
-			linha da matriz = contador_linha
-		 se for aquela posição, para de contar
-3) quantidade de "\n" que deve encontrar para achar a linha da sigla que quer = contador_linha-1
+- inserir nova figurinha:
+	-> apontador para começo da linha respectiva à sigla
+	-> abrir arquivo "faltando.txt"
+	-> cada entrada tem formato "XYZ- "
+	   a cada 8 leituras, está no começo da próxima figurinha
+	-> escrever o número lido nos 2 primeiros espaços em branco
+		-> 3 leituras
+		   escreve primeiro valor (convertido para ASCII? string da entrada já vem como ASCII provavelmente, verificar!)
+		   escreve segundo valor
+	-> fim da inserção
 
 
-
-
-
-aaaaa
-bbbbb
-ccccc
-ddddd

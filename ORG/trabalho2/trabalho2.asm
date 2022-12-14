@@ -4,15 +4,15 @@
 	FALTANDO:	.asciiz "faltando.txt"
 	
 	# PRINTS
-	INITIAL_P:	.asciiz "Bem-vindo ao programa de controle de figurinhas da Copa 2022!"
+	INITIAL_P:	.asciiz "Bem-vindo ao programa de controle de figurinhas da Copa 2022!\n\n"
 	
-	GET_OP_P:	.asciiz "Digite a operação desejada:"
-	GET_OP_P_CONS:	.asciiz	"   - 0: consultar figurinhas possuídas."
-	GET_OP_P_INST:	.asciiz	"   - 1: inserir figurinha adquirida."
-	GET_OP_P_SAVE:	.asciiz	"   - 2: atualizar arquivo."
-	GET_OP_P_QUIT:	.asciiz "   - 9: fechar o programa (NAO ESQUECA DE SALVAR O ARQUIVO!)."
+	GET_OP_P:	.asciiz "Digite a operação desejada:\n"
+	GET_OP_P_CONS:	.asciiz	"   - 0: consultar figurinhas possuídas.\n"
+	GET_OP_P_INST:	.asciiz	"   - 1: inserir figurinha adquirida.\n"
+	GET_OP_P_SAVE:	.asciiz	"   - 2: atualizar arquivo.\n"
+	GET_OP_P_QUIT:	.asciiz "   - 9: fechar o programa (NAO ESQUECA DE SALVAR O ARQUIVO!).\n"
 
-
+	.align 2
 	PAISES:		.asciiz "QAT ECU SEN NED ENG IRN USA WAL ARG KSA MEX POL FRA AUS DEN TUN ESP CRC GET JPN BEL CAN MAR CRO BRA SRB SUI CMR POR GHA URU KOR"
 
 	.align 2
@@ -25,21 +25,37 @@
 main:
 	la	$a0, INITIAL_P
 	jal	PRINT
-
-
+	
+	jal	PRINT_MENU
 
 
 	# EXEMPLO DE ENTRADA DO TECLADO E PRINT
 	jal	READ_STRING
 	move	$t0, $v0
 	
-	move	$a0, $t0
-	jal	PRINT
+	#move	$a0, $t0
+	#jal	PRINT
 
 	jal	FIND_COUNTRY_INDEX
+	move	$s0, $v1
+
+	la	$a0, FALTANDO
+	li	$a1, 0
+	jal	OPEN_FILE
+	move	$s1, $v0
+
+	move	$a0, $s1		# descritor do arquivo
+	move	$a1, $s0		# quantidade de linhas que precisa pular
+	jal	GO_TO_ROW
 	
-
-
+	move	$a0, $v0
+	li	$v0, 14				# 14 = ler arquivo
+			# $a0 contém o descritor do arquivo
+			la	$a1, TEMPORARY_BUFFER
+			la	$a2, 1				# tamanho do buffer
+			syscall					# le e escreve byte no buffer
+	
+			lb 	$s0, ($a1)			# le o buffer
 END:
 	j	END
 
@@ -64,6 +80,28 @@ OPEN_FILE:
 # FIM DE OPEN_FILE	
 # =================================================
 
+# =================================================
+#			PRINT_MENU
+# Procedimento que mostra o menu de opções no console
+# =================================================
+PRINT_MENU:
+	move	$t0, $ra		# "salva" $ra
+
+	la	$a0, GET_OP_P
+	jal	PRINT
+	la	$a0, GET_OP_P_CONS
+	jal	PRINT
+	la	$a0, GET_OP_P_INST
+	jal	PRINT
+	la	$a0, GET_OP_P_SAVE
+	jal	PRINT
+	la	$a0, GET_OP_P_QUIT
+	jal	PRINT
+
+	move	$ra, $t0
+	jr	$ra
+	
+# FIM DE PRINT_MENU
 
 # =================================================
 #			READ_STRING
@@ -150,6 +188,7 @@ FIND_COUNTRY_INDEX:
 		# volta para o looping sempre que a sigla nao corresponder a que foi lida
 		SEARCH_LOOP:
 			beq	$t1, $t3, FOUND		# se a sigla do input for igual a do vetor, encontrou
+			bge	$t0, 32,  NOT_FOUND	# se já tiver percorrido todos os países, não tem o país
 			# senao
 			addi	$t0, $t0, 1
 			addi	$t2, $t2, 4		# endereco da proxima sigla do vetor (prox. end. de memoria)
@@ -157,14 +196,75 @@ FIND_COUNTRY_INDEX:
 			j	SEARCH_LOOP
 
 		FOUND:
-			move	$a0, $t2
-			li	$v0, 4
-			syscall			
+			li 	$v0, 1
+			move	$v1, $t0
+			j	END_SEARCH
+
+		NOT_FOUND:
+			li	$v0, 0
+			j 	END_SEARCH
+
+	END_SEARCH:
+	jr	$ra
+
+# FIM DE FIND_COUNTRY_INDEX
+# =================================================
 
 
+# =================================================
+#			GO_TO_ROW
+# Vai até a linha correspondente ao país da sigla
+# 	- $a0 = descritor do arquivo
+#	- $a1 = quantidade de linhas que precisa pular no arquivo
+# =================================================	
+GO_TO_ROW:
+	# prepara a pilha
+	addi	$sp, $sp, -20
+	sw	$ra, 16($sp)
+	sw	$a1, 12($sp)
+	sw	$a0, 8($sp)
+	sw	$s1, 4($sp)
+	sw	$s0, 0($sp)
 	
+	# ASCII 10 = quebra de lina
+	move	$s7, $a1	# quantidade de linhas a serem puladsa (CTE)
+	li	$t0, 0		# $t0 = byte lido
+	li	$t1, 0		# $t1 = quantidade de "EF" encontrados
+	
+	# reinicia o buffer temporário
+	sw	$zero, TEMPORARY_BUFFER
+	
+	SEARCH_EF_LOOP:
+		# quando igualam os valores, está na linha desejada no arquivo
+		beq	$t1, $s7, ON_ROW
 
-		
-		
+		# lendo o arquivo byte a byte	
+		READ_LINE_LOOP:
+			li	$v0, 14				# 14 = ler arquivo
+			# $a0 contém o descritor do arquivo
+			la	$a1, TEMPORARY_BUFFER
+			la	$a2, 1				# tamanho do buffer
+			syscall					# le e escreve byte no buffer
+	
+			lb 	$s0, ($a1)			# le o buffer
+			bne	$s0, 10, READ_LINE_LOOP
+			# caso tenha achado EOL:
+			addi	$t1, $t1, 1			# num EF lidos ++
+			j	SEARCH_EF_LOOP			# verifica se já viu todos que precisava e volta ao loop se preciso
+			
 
-
+	# quando encontrar a quantidade de quebra de linhas
+	ON_ROW:
+		move	$v0, $a0			# retorna mesmo descritor do arquivo apenas para garantir que está no arquivo correto
+			
+	END_GO_TO_ROW:
+		lw	$s0, 0($sp)
+		lw	$s1, 4($sp)
+		lw	$a0, 8($sp)
+		lw	$a1, 12($sp)
+		lw	$ra, 16($sp)
+		addi	$sp, $sp, 20
+ 
+		jr	$ra
+# FIM DE GO_TO_ROW
+# =================================================
