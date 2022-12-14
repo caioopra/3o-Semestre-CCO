@@ -20,13 +20,21 @@
 
 	.align 2
 	TEMPORARY_BUFFER: .space 3	# usado para identificar sigla de um pais
+	
+	.align 2
+	WRITE_LINE_BUFFER: .space 141	# armazena uma linha do arquivo
 
 .text
 main:
 	la	$a0, INITIAL_P
 	jal	PRINT
 	
-	jal	PRINT_MENU
+	# looping principal do programa
+	MAIN_LOOP:
+		jal	PRINT_MENU
+		jal	READ_INT			# oepração desejada
+		move	$a0, $v0			# $a0 = inteiro com a operação a ser decodificada
+		jal	EXECUTE_OPERATION		# $a0 já carregado com a operação
 
 
 	# EXEMPLO DE ENTRADA DO TECLADO E PRINT
@@ -69,6 +77,11 @@ END:
 #	- $v0 = retorna identificador do arquivo
 # =================================================
 OPEN_FILE:
+	addi	$sp, $sp, -12
+	sw	$ra, 8($sp)
+	sw	$a0, 4($sp)
+	sw	$a1, 0($sp)
+	
 	li	$v0, 13
 	# $a0 já carregado com o endereço do arquiv
 	# $a1 já carregado com modo de abertura
@@ -76,6 +89,11 @@ OPEN_FILE:
 	syscall
 	
 	# $v0 já possui descritor do arquivo
+	lw	$ra, 8($sp)
+	lw	$a0, 4($sp)
+	lw	$a1, 0($sp)
+	addi	$sp, $sp, 12
+
 	jr	$ra
 # FIM DE OPEN_FILE	
 # =================================================
@@ -109,12 +127,22 @@ PRINT_MENU:
 #	- $v0 = endereço da string lida
 # =================================================
 READ_STRING:
+	addi	$sp, $sp, -12
+	sw	$ra, 8($sp)
+	sw	$a0, 4($sp)
+	sw	$a1, 0($sp)
+
 	li	$v0, 8			# ler string do console
 	la	$a0, INPUT_BUFFER	# buffer da leitura
 	li	$a1, 8			# bytes para a string (máximo 8 bytes, precisaria apeans de 6 pelo formato da entrada)
 	syscall
 	
 	move	$v0, $a0
+
+	lw	$ra, 8($sp)
+	lw	$a0, 4($sp)
+	lw	$a1, 0($sp)
+	addi	$sp, $sp, 12
 
 	jr	$ra
 # FIM DE READ_STRING	
@@ -142,10 +170,99 @@ READ_INT:
 #	- $a0 = string a ser mostrada (endereço)
 # =================================================
 PRINT:
+	addi	$sp, $sp, -8
+	sw	$ra, 4($sp)
+	sw	$a0, 0($sp)
+
 	li	$v0, 4
 	syscall
+	
+	lw	$ra, 4($sp)
+	lw	$a0, 0($sp)
+	addi	$sp, $sp, 8
+
 	jr	$ra
 # FIM DE PRINT
+# =================================================
+
+
+# =================================================
+#			EXECUTE_OPERATION
+# Procedimento que decodifica a entrada da operação e a executa, caso válida
+#	- $a0 = valor da operação digitada pelo usuário
+#	- $v0 = status (-1 = falhou; 0 = sucesso)
+# =================================================
+EXECUTE_OPERATION:
+	addi	$sp, $sp, -12
+	sw	$ra, 8($sp)
+	sw	$a0, 4($sp)
+	sw	$s0, 0($sp)
+	
+	beq	$a0, 0, EXEC_GET_OBTIDAS
+	beq	$a0, 1, EXEC_INSERT
+	beq	$a0, 2, EXEC_UPDATE
+	beq	$a0, 9, EXEC_CLOSE
+	
+	li	$v0, -1			# status = falha
+	j	RETURN_TO_MAIN
+	
+	# mostra no console todas as figurinhas obtidas (as que possuem número)
+	EXEC_GET_OBTIDAS:
+		li	$t1, 0		# numero de linhas lidas
+
+		la	$a0, OBTIDAS
+		li	$a1, 0		# leitura
+		jal	OPEN_FILE
+		move	$s0, $v0	# descritor do arquivo com figurinhas obtidas
+		
+		LOOP_OBTIDAS:
+			addi	$t1, $t1, 1		# lendo um país
+			beq	$t1, 32, END_GET_OBTIDAS			# se tiver lido todos os 32 já, fim da operação
+		
+			li	$v0, 14
+			move	$a0, $s0
+			la	$a1, WRITE_LINE_BUFFER
+			li	$a2, 141
+			syscall
+			
+			la	$a0, WRITE_LINE_BUFFER
+			jal	PRINT
+			
+			j	LOOP_OBTIDAS
+
+		END_GET_OBTIDAS:
+		
+
+		li	$v0, 0		# status = sucesso
+		j 	RETURN_TO_MAIN
+		
+	# pede para o usuário digitar o código de uma figurinha que quer adicionar
+	EXEC_INSERT:
+
+		li	$v0, 0
+		j 	RETURN_TO_MAIN	
+		
+	# atualiza os arquivos acessáveis pelo usuário (.txt)
+	EXEC_UPDATE:
+	
+		li	$v0, 0
+		j 	RETURN_TO_MAIN
+	
+	# fecha o programa (não salva por padrão)
+	EXEC_CLOSE:
+	
+		li	$v0, 0
+		j 	RETURN_TO_MAIN
+
+	RETURN_TO_MAIN:
+		lw	$s0, 0($sp)
+		lw	$a0, 4($sp)
+		lw	$ra, 8($sp)
+		addi	$sp, $sp, 8
+		
+		jr	$ra
+
+# FIM DE EXECUTE_OPERATION
 # =================================================
 
 
@@ -173,11 +290,6 @@ FIND_COUNTRY_INDEX:
 		sb	$t2, 2($t1)
 		li	$t2, 0x20
 		sb	$t2, 3($t1)
-		
-		# DEBUG: printa a sigla lida
-		#move	$a0, $t1
-		#li	$v0, 4
-		#syscall
 	
 	# procura a sigla encontrada no vetor com todas as siglas
 	GET_INDEX:
