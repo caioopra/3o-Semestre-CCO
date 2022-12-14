@@ -74,7 +74,7 @@ class AVLTree {
             } else {
                 hr = height(node->right);
             }
-            int balance = abs(hl - hr);
+            int balance = hl - hr;
 
             // rotações
             // simples a esquerda
@@ -146,7 +146,7 @@ class AVLTree {
             } else {
                 hr = height(node->right);
             }
-            int balanceamento = abs(hl - hr);
+            int balanceamento = hl - hr;
 
             if (balanceamento > 1) {
                 if (

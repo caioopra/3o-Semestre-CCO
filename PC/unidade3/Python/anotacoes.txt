@@ -152,3 +152,16 @@ Canais de Comunicação
 	-> Connection.recv() aguarda até que algum dado seja enviado e retorna o que for recebido
 
 
+=> Queue (Filas de mensagens)
+	-> usa uma thread, um pip e locs/semáforos na sua implementção
+	-> construtuor Queue([maxsize]) cria fila com tamanho limitado 
+	-> fila encerrada com Queue.close() seguida de Queue.join_thread() que encerra a sua thread usada na implementação
+
+	-> put(obj, block=True, timeout=None): coloca obj na fila; se cheia, bloqueia por padrão até tem lugar ou até timeout
+	-> get(block=True, timeout=None): retira uma msg da fila e a retorna; se vazia, bloqueia por padrão até chegar ou timeout
+	-> qsize(): num. de mensagens na fila
+	-> empty() e full()
+	
+=> Value e Array (compartilhamento de memória)
+	-> Value(type, *args, lock=True): cria objeto do tipo type; args usados para inicialização se necessário; lock pode ser usado para evitar acesso concorrente
+	-> Array(type, size_or_initializar, *, lock=True): cria array de elementos type, com tamanho ou inicializado conforme indicado e pode ter lock para evitar acesso concorrente

@@ -1,0 +1,38 @@
+=> estados: patamares de operação de um sistema; evolução do comportamento do sistema; pode representar combinação de fatores
+=> transições: eventos que podem causar alterações no estado de um sistema
+
+-----------------
+=> matriz "pré" = lugares de entrada
+	-> linhas = transições
+	   colunas = lugares 
+   matriz pós = lugares de saída
+   -> indicando também o peso das entradas/saídas
+   matriz de marcação = qtd de fichas em cada lugar
+   
+     
+Regras de disparo de transições:
+	-> somente quando habilitadas
+	-> uma transição dispara por vez
+	-> disparo causa alterações no posicionamento das fichas nos lugares
+		-> retira N (peso do arco que liga o lugar a transição) em cada lugar de entrada
+		-> retira M (peso do arco que liga a transição ao lugar) em cada lugar de saída
+
+------------
+Propriedades
+=> dependentes da marcação (dependendo da inicial, podem ou não ser verificadas)
+
+- limitação: 
+	-> um lugar é k-limitado se, para todas marcações possíveis, o núm máximo de fichas no lugar é no máximo k
+	-> rede de petri é k-limitada (ou limitada em k) se todos seus lugares são k-limitados
+		-> limitação de uma rede é dada pelo máximo valor de k na rede
+	-> pode ser ilimitada
+	
+- vivacidade:
+	-> transição quase-viva: existe pelo menos um caminho a partir da marcação inicial que leve a seu disparo
+	-> transição viva: existe pelo menos um caminho a partir de qualquer marcação que a dispara
+		-> uma rede é viva caso todas transições são vivas (senão é não é viva)
+
+	-> não é viva caso tenha estado de bloqueio
+
+- reinicialização: se, de qualquer marcação, existe um caminho que leve à marcação inicial
+
