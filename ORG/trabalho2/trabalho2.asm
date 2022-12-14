@@ -11,6 +11,9 @@
 	GET_OP_P_INST:	.asciiz	"   - 1: inserir figurinha adquirida.\n"
 	GET_OP_P_SAVE:	.asciiz	"   - 2: atualizar arquivo.\n"
 	GET_OP_P_QUIT:	.asciiz "   - 9: fechar o programa (NAO ESQUECA DE SALVAR O ARQUIVO!).\n"
+	
+	PRINT_INFO_OBTIDAS: 	.asciiz "\nFigurinhas obtidas (se não houver número ao lado, ainda não a possui):\n"
+	PRINT_INFO_FALTANDO: 	.asciiz "\nFigurinhas faltando (se não houver número ao lado, já a possui):\n"
 
 	.align 2
 	PAISES:		.asciiz "QAT ECU SEN NED ENG IRN USA WAL ARG KSA MEX POL FRA AUS DEN TUN ESP CRC GET JPN BEL CAN MAR CRO BRA SRB SUI CMR POR GHA URU KOR"
@@ -210,14 +213,18 @@ EXECUTE_OPERATION:
 	EXEC_GET_OBTIDAS:
 		li	$t1, 0		# numero de linhas lidas
 
+		la 	$a0, PRINT_INFO_OBTIDAS
+		jal	PRINT
+
 		la	$a0, OBTIDAS
 		li	$a1, 0		# leitura
 		jal	OPEN_FILE
 		move	$s0, $v0	# descritor do arquivo com figurinhas obtidas
+
 		
 		LOOP_OBTIDAS:
 			addi	$t1, $t1, 1		# lendo um país
-			beq	$t1, 32, END_GET_OBTIDAS			# se tiver lido todos os 32 já, fim da operação
+			bgt	$t1, 32, END_LOOP_OBTIDAS			# se tiver lido todos os 32 já, fim da operação
 		
 			li	$v0, 14
 			move	$a0, $s0
@@ -230,9 +237,35 @@ EXECUTE_OPERATION:
 			
 			j	LOOP_OBTIDAS
 
-		END_GET_OBTIDAS:
-		
+		END_LOOP_OBTIDAS:
+			la	$a0, PRINT_INFO_FALTANDO
+			jal	PRINT
 
+			li	$t1, 0
+			
+			la	$a0, FALTANDO
+			li	$a1, 0
+			jal 	OPEN_FILE
+			move	$s0, $v0
+			
+		LOOP_FALTANDO:
+			addi	$t1, $t1, 1		
+			bgt	$t1, 32, END_LOOP_FALTANDO
+		
+			li	$v0, 14
+			move	$a0, $s0
+			la	$a1, WRITE_LINE_BUFFER
+			li	$a2, 141
+			syscall
+			
+			la	$a0, WRITE_LINE_BUFFER
+			jal	PRINT
+			
+			j	LOOP_FALTANDO
+
+		END_LOOP_FALTANDO:
+			
+		
 		li	$v0, 0		# status = sucesso
 		j 	RETURN_TO_MAIN
 		
