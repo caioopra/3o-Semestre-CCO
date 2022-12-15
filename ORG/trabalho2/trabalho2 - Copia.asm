@@ -6,19 +6,21 @@
 	# PRINTS
 	INITIAL_P:	.asciiz "Bem-vindo ao programa de controle de figurinhas da Copa 2022!\n\n"
 	
-	GET_OP_P:	.asciiz "Digite a operacao desejada:\n"
+	GET_OP_P:	.asciiz "Digite a operacao£o desejada:\n"
 	GET_OP_P_CONS:	.asciiz	"   - 0: consultar figurinhas obtidas e faltando.\n"
 	GET_OP_P_INST:	.asciiz	"   - 1: inserir figurinha adquirida.\n"
 	GET_OP_P_QUIT:	.asciiz "   - 9: fechar o programa.\n"
 	
-	PRINT_INFO_OBTIDAS: 	.asciiz "\nFigurinhas obtidas (se nao houve numero ao lado, ainda nao a possui):\n"
+	PRINT_INFO_OBTIDAS: 	.asciiz "\nFigurinhas obtidas (se nao houver numero ao lado, ainda nao a possui):\n"
 	PRINT_INFO_FALTANDO: 	.asciiz "\nFigurinhas faltando (se nao houver numero ao lado, ja a possui):\n"
 	
-	FAILED_INPUT_PRINT: 	.asciiz "Coigo da figurinha informada invlida!\n"
-	EXIT_PROGRAM_PRINT: 	.asciiz	"Finalizando a execuÁ„o do programa.\n"
-	ERROR_INPUT_PRINT:	.asciiz "Valor inv·lido, insira um disponÌvel no menu.\n"
+	FAILED_INPUT_PRINT: 	.asciiz "Codigo da figurinha informada invalida!\n"
 	
-	INSERT_INCOMPLETE:	.asciiz "OperaÁ„o de inserÁ„o n„o finalizada.\n"
+	INSERT_INCOMPLETE:	.asciiz "OperaÁ„o de inserÁ„o incompleta. :("
+	
+	FIM_EXECUCAO:		.asciiz "Encerrando execuÁ„o do sistema."
+	
+	INVALID_OPERATION_PRINT: .asciiz "Operacao inserida invalida, insira um numero entre os disponiveis no menu."
 
 	.align 2
 	PAISES:		.asciiz "QAT ECU SEN NED ENG IRN USA WAL ARG KSA MEX POL FRA AUS DEN TUN ESP CRC GET JPN BEL CAN MAR CRO BRA SRB SUI CMR POR GHA URU KOR"
@@ -35,7 +37,7 @@
 	REWRITE_FILE_BUFFER: .space 4512	# 32 paises * (20 figurinhas * 7 caracteres + 1 EOL)
 	
 	.align 2
-	WRITE_LINE_BUFFER: .space 142		# armazena uma linha do arquivo
+	WRITE_LINE_BUFFER: .space 141		# armazena uma linha do arquivo
 
 .text
 main:
@@ -45,25 +47,25 @@ main:
 	# looping principal do programa
 	MAIN_LOOP:
 		jal	PRINT_MENU
-		jal	READ_INT			# oepra√ß√£o desejada
-		move	$a0, $v0			# $a0 = inteiro com a opera√ß√£o a ser decodificada
-		jal	EXECUTE_OPERATION		# $a0 j√° carregado com a opera√ß√£o
-
-		beq	$v0, 2, EXIT_PROGRAM
-		beq	$v0, -1, ERROR_INPUT
-
+		jal	READ_INT			# oepracao desejada
+		move	$a0, $v0			# $a0 = inteiro com a operacao a ser decodificada
+		jal	EXECUTE_OPERATION		# $a0 ja° carregado com a operacao
+		move	$s0, $v0
+		
+		beq	$s0, -1, INVALID_OPERATION		# -1 = encerrar execucao
+		beq	$s0, 0, EXIT_PROGRAM
+		
 		j	MAIN_LOOP
-
-	ERROR_INPUT:
-		la	$a0, ERROR_INPUT_PRINT
-		jal	PRINT
+		
+	INVALID_OPERATION:
+		la	$a0, INVALID_OPERATION_PRINT
+		jal 	PRINT
 		j	MAIN_LOOP
-			
+	
 	EXIT_PROGRAM:
-		la	$a0, EXIT_PROGRAM_PRINT
+		la	$a0, FIM_EXECUCAO
 		jal	PRINT
-		j	END
-
+		j 	END
 END:
 	j	END
 
@@ -198,6 +200,7 @@ EXECUTE_OPERATION:
 	sw	$s1, 4($sp)
 	sw	$s2, 0($sp)
 	
+	
 	beq	$a0, 0, EXEC_GET_OBTIDAS
 	beq	$a0, 1, EXEC_INSERT_INCOMPLETE
 	beq	$a0, 9, EXEC_CLOSE
@@ -226,7 +229,7 @@ EXECUTE_OPERATION:
 			li	$v0, 14
 			move	$a0, $s0
 			la	$a1, WRITE_LINE_BUFFER
-			li	$a2, 142
+			li	$a2, 141
 			syscall
 			
 			la	$a0, WRITE_LINE_BUFFER
@@ -262,16 +265,15 @@ EXECUTE_OPERATION:
 
 		END_LOOP_FALTANDO:
 
-		li	$v0, 0		# status = sucesso
+		li	$v0, 1		# status = sucesso
 		j 	RETURN_TO_MAIN
 	
+	# operaÁ„o de inserÁ„o incompleta
 	EXEC_INSERT_INCOMPLETE:
 		la	$a0, INSERT_INCOMPLETE
 		jal	PRINT
-		
-		li	$v0, 0
 		j	RETURN_TO_MAIN
-		
+	
 	# ======================================================
 	# pede para o usu√°rio digitar o c√≥digo de uma figurinha que quer adicionar
 	EXEC_INSERT:
@@ -316,15 +318,18 @@ EXECUTE_OPERATION:
 				# escreve x vezes o valor original
 				li	$t7, 0
 				move	$a1, $s1	# numero de linhas para pular
-				jal		GO_TO_ROW
+				jal	GO_TO_ROW
 				# agora o descritor do arquivo est√° no come√ßo da linha que deseja
 
 				subi	$t8, $t3, 1	# x - 1
-				mul		$t8, $t8, 7	# (x-1) * 7
+				mul	$t8, $t8, 7	# (x-1) * 7
 				# escreve o que ler do arquivo (x-1)*7 vezes (x = n√∫mero da figurinha)
 				LOOP_WRITE_ON_COUNTRY_BEFORE_INPUT:		# $s1 = index pra pegar sigla 
+					
+
 
 				LOOP_WRITE_AT_INPUT_POSITION:
+						
 					addi	$t7, $t7, 1
 					j	LOOP_WRITE_ON_COUNTRY_BEFORE_INPUT
 
@@ -358,7 +363,9 @@ EXECUTE_OPERATION:
 	# ======================================================
 	# fecha o programa (n√£o salva por padr√£o)
 	EXEC_CLOSE:
-		li	$v0, 2
+		la	$a0, FIM_EXECUCAO
+		jal	PRINT
+		li	$v0, 0
 		j 	RETURN_TO_MAIN
 
 	RETURN_TO_MAIN:
