@@ -21,72 +21,6 @@
 	PAISES:		.asciiz "QAT ECU SEN NED ENG IRN USA WAL ARG KSA MEX POL FRA AUS DEN TUN ESP CRC GET JPN BEL CAN MAR CRO BRA SRB SUI CMR POR GHA URU KOR"
 
 	.align 2
-	QAT: .asciiz "QAT-   "
-	.align 2
-	ECU: .asciiz "ECU-   "
-	.align 2
-	SEN: .asciiz "SEN-   "
-	.align 2
-	NED: .asciiz "NED-   "
-	.align 2
-	ENG: .asciiz "ENG-   "
-	.align 2
-	IRN: .asciiz "IRN-   "
-	.align 2
-	USA: .asciiz "USA-   "
-	.align 2
-	WAL: .asciiz "WAL-   "
-	.align 2
-	ARG: .asciiz "ARG-   "
-	.align 2
-	KSA: .asciiz "KSA-   "
-	.align 2
-	MEX: .asciiz "MEX-   "
-	.align 2
-	POL: .asciiz "POL-   "
-	.align 2
-	FRA: .asciiz "FRA-   "
-	.align 2
-	AUS: .asciiz "AUS-   "
-	.align 2
-	DEN: .asciiz "DEN-   "
-	.align 2
-	TUN: .asciiz "TUN-   "
-	.align 2
-	ESP: .asciiz "ESP-   "
-	.align 2
-	CRC: .asciiz "CRC-   "
-	.align 2
-	GET: .asciiz "GET-   "
-	.align 2
-	JPN: .asciiz "JPN-   "
-	.align 2
-	BEL: .asciiz "BEL-   "
-	.align 2
-	CAN: .asciiz "CAN-   "
-	.align 2
-	MAR: .asciiz "MAR-   "
-	.align 2
-	CRO: .asciiz "CRO-   "
-	.align 2
-	BRA: .asciiz "BRA-   "
-	.align 2
-	SRB: .asciiz "SRB-   "
-	.align 2
-	SUI: .asciiz "SUI-   "
-	.align 2
-	CMR: .asciiz "CMR-   "
-	.align 2
-	POR: .asciiz "POR-   "
-	.align 2
-	POR: .asciiz "POR-   "
-	.align 2
-	URU: .asciiz "URU-   "
-	.align 2
-	KOR: .asciiz "KOR-   "
-
-
-	.align 2
 	INPUT_BUFFER:  	.space 8
 
 	.align 2
@@ -96,9 +30,6 @@
 	
 	.align 2
 	REWRITE_FILE_BUFFER: .space 4512	# 32 paises * (20 figurinhas * 7 caracteres + 1 EOL)
-	
-	.align 2
-	WRITE_LINE_BUFFER: .space 141		# armazena uma linha do arquivo
 
 .text
 main:
@@ -134,12 +65,12 @@ main:
 	
 	move	$a0, $v0
 	li	$v0, 14				# 14 = ler arquivo
-			# $a0 contém o descritor do arquivo
-			la	$a1, TEMPORARY_BUFFER
-			la	$a2, 1				# tamanho do buffer
-			syscall					# le e escreve byte no buffer
-	
-			lb 	$s0, ($a1)			# le o buffer
+    # $a0 contém o descritor do arquivo
+    la	$a1, TEMPORARY_BUFFER
+    la	$a2, 1				# tamanho do buffer
+    syscall					# le e escreve byte no buffer
+
+    lb 	$s0, ($a1)			# le o buffer
 END:
 	j	END
 
@@ -352,83 +283,7 @@ EXECUTE_OPERATION:
 		jal	READ_STRING
 		move	$s0, $v0			# código da figurinha
 		
-		jal	FIND_COUNTRY_INDEX
-		beq	$v0, 0, FAILED_INPUT		# caso codigo invalido
-		move	$s1, $v1			# index para encontrar pais na lista .data
-		
-		la	$a0, OBTIDAS
-		li	$a1, 0
-		jal	OPEN_FILE
-		move	$s2, $v0			# descritor do arquivo FALTANDO
-
-		la	$t1, TEMPORARY_NUMBER_BUFFER
-		lb	$t2, ($t1)
-		subi	$t2, $t2, 48
-		mul	$t2, $t2, 10
-		lb	$t3, 1($t1)
-		subi	$t3, $t3, 48
-		add	$t3, $t3, $t2			# número da figurinha convertido para inteiro (n)
-		
-		li	$t0, 0				# número de linhas escritas
-		li	$t5, 10				# CTE = 10 = EOL
-		
-		# loop para escrita do arquivo mas com a figurinha inserida
-		la	$a1, REWRITE_FILE_BUFFER
-		WRITE_LOOP:
-			beq	$t0, $s1, ON_COUNTRY_ROW
-			blt	$t0, $s1, ROW_LESS_COUNTRY
-			bge	$t0, 32, END_WRITE_LOOP
-			
-			# senão, está em linha após a do pais
-
-
-			addi	$t0, $t0, 1
-			j	WRITE_LOOP
-
-			# escrevve no buffer contendo todas as figurinhas quando está na linha que tem a figurinha do input			
-			ON_COUNTRY_ROW:
-				# escreve x vezes o valor original
-				li	$t7, 0
-				move	$a1, $s1	# numero de linhas para pular
-				jal		GO_TO_ROW
-				# agora o descritor do arquivo está no começo da linha que deseja
-
-				subi	$t8, $t3, 1	# x - 1
-				mul		$t8, $t8, 7	# (x-1) * 7
-				# escreve o que ler do arquivo (x-1)*7 vezes (x = número da figurinha)
-				LOOP_WRITE_ON_COUNTRY_BEFORE_INPUT:		# $s1 = index pra pegar sigla 
-					sb 		$s1, 
-					subi	$t8, $t8, 
-
-				LOOP_WRITE_AT_INPUT_POSITION:
-					
-					
-
-						
-					addi	$t7, $t7, 1
-					j	LOOP_WRITE_ON_COUNTRY_BEFORE_INPUT
-
-				addi	$t0, $t0, 1
-				j	WRITE_LOOP
-
-			# escreve no buffer quando está nas linhas anteriores ao do input
-			ROW_LESS_COUNTRY:
-				move	$a0, $s2
-				li	$v0, 14
-				la	$a2, 141
-				syscall
-
-				addi	$t0, $t0, 1
-				addi	$a1, $a1, 140				
-				j	WRITE_LOOP
-
-		END_WRITE_LOOP:
-		
-		j	END_INSERT
-		
-		FAILED_INPUT:
-			la	$a0, FAILED_INPUT_PRINT
-			jal	PRINT
+        
 		
 		END_INSERT:
 			li	$v0, 0

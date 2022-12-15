@@ -1,12 +1,44 @@
-- inserir nova figurinha:
-	-> apontador para começo da linha respectiva à sigla
-	-> abrir arquivo "faltando.txt"
-	-> cada entrada tem formato "XYZ- "
-	   a cada 8 leituras, está no começo da próxima figurinha
-	-> escrever o número lido nos 2 primeiros espaços em branco
-		-> 3 leituras
-		   escreve primeiro valor (convertido para ASCII? string da entrada já vem como ASCII provavelmente, verificar!)
-		   escreve segundo valor
-	-> fim da inserção
+linhas 0 - 31
+linha do país escolhido = n
 
 
+-> salva 0 -> n-1 no buffer (copiando do arquivo original linha por linha)
+-> calcula a posição que precisa inserir a figurinha
+	-> base = XYZ-   (3 espaços em branco)
+	-> se precisar alterar, colca número em "XYZ-__ "
+-> salva n
+-> copia e salva n+1 até 32
+
+
+n
+i = 0
+loop
+	caso i == n
+		...
+		i++
+	se i < n
+		le linha (syscall 14)
+		escreve a linha no buffer + eol (10)
+		i++
+	senao
+		go_to_row i
+		escrebe a linha no buffer + eol (já vem junto na string?)
+		i++
+		
+
+
+
+estando na linha da que vai reescrever:
+	... ... ... XXX ... ... ... ... 
+	qtd antes de XXX = XXX - 1
+		-> cada um com 7 caracteres
+		   XXX * 7 leituras e escritas de byte
+	escreve a base (buffer de 3 bytes) + "-" + "XX" (também em buffer)
+	qtd depois de XXX = 20 - XXX
+
+
+	01 02 03 04 05 06 07
+
+	01
+		  02
+		      03 04 05 06 07 
